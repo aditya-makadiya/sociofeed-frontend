@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@layer components {
+  .form-container {
+    @apply flex flex-col gap-4 p-6 bg-white rounded-lg shadow-md max-w-md w-full mx-auto;
+  }
+}
