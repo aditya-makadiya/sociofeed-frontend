@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import rootReducer from './slices';
-import { injectStore } from '../utils/api/axiosConfig';
+// import { injectStore } from '../utils/axiosConfig';
 
 export const store = configureStore({
-  reducer: rootReducer,
+  reducer: {
+    auth: rootReducer,
+  },
 });
 
-injectStore(store);
+// injectStore(store);

@@ -1,4 +1,3 @@
-// src/pages/auth/Activation.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import endpoints from "../../utils/api/endpoints";
@@ -9,6 +8,7 @@ import {
   CircularProgress,
   Paper,
 } from "@mui/material";
+import { motion } from "framer-motion";
 
 const ActivationPage = () => {
   const { token } = useParams();
@@ -43,60 +43,95 @@ const ActivationPage = () => {
   }, [token]);
 
   return (
-    <Box
-      minHeight="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bgcolor="#f3f4f6"
-    >
-      <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: "100%" }}>
-        {loading ? (
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <CircularProgress />
-            <Typography mt={2}>Activating your account...</Typography>
-          </Box>
-        ) : activated ? (
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              color="success.main"
-              gutterBottom
+    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-500 px-4">
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100 }}
+      >
+        <Paper
+          elevation={3}
+          className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8"
+        >
+          {loading ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col items-center"
             >
-              Account Activated!
-            </Typography>
-            <Typography mb={3} color="text.secondary">
-              Your account has been successfully activated. You can now log in.
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("/login")}
-              fullWidth
+              <CircularProgress sx={{ color: "#2563eb" }} />
+              <Typography className="mt-4 text-gray-600 text-sm">
+                Activating your account...
+              </Typography>
+            </motion.div>
+          ) : activated ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col items-center"
             >
-              Go to Login
-            </Button>
-          </Box>
-        ) : (
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <Typography variant="h6" color="error" gutterBottom>
-              Activation Failed
-            </Typography>
-            <Typography mb={3} color="text.secondary">
-              {error}
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => navigate("/login")}
-              fullWidth
+              <Typography
+                variant="h5"
+                className="font-extrabold text-green-600 mb-4 tracking-tight"
+              >
+                Account Activated!
+              </Typography>
+              <Typography className="mb-6 text-gray-500 text-sm text-center">
+                Your account has been successfully activated. You can now log
+                in.
+              </Typography>
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => navigate("/login")}
+                  fullWidth
+                  className="py-3 rounded-full text-sm font-medium tracking-wide"
+                  sx={{
+                    backgroundColor: "#2563eb",
+                    "&:hover": { backgroundColor: "#1d4ed8" },
+                    textTransform: "none",
+                  }}
+                >
+                  Go to Login
+                </Button>
+              </motion.div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col items-center"
             >
-              Go to Login
-            </Button>
-          </Box>
-        )}
-      </Paper>
+              <Typography variant="h6" className="text-red-500 mb-4">
+                Activation Failed
+              </Typography>
+              <Typography className="mb-6 text-gray-500 text-sm text-center">
+                {error}
+              </Typography>
+              <motion.div whileHover={{ scale: 1.05 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => navigate("/login")}
+                  fullWidth
+                  className="py-3 rounded-full text-sm font-medium tracking-wide"
+                  sx={{
+                    backgroundColor: "#2563eb",
+                    "&:hover": { backgroundColor: "#1d4ed8" },
+                    textTransform: "none",
+                  }}
+                >
+                  Go to Login
+                </Button>
+              </motion.div>
+            </motion.div>
+          )}
+        </Paper>
+      </motion.div>
     </Box>
   );
 };

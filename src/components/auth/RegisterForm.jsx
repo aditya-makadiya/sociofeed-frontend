@@ -35,8 +35,10 @@ const registrationFields = [
 ];
 
 const RegisterForm = ({ onSubmit, isSubmitting }) => (
-  <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 sm:p-10">
-    <h2 className="text-xl font-bold text-center mb-6">Create Your Account</h2>
+  <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
+    <h2 className="text-2xl font-extrabold text-center mb-8 text-gray-900 tracking-tight">
+      Create Your Account
+    </h2>
     <CommonForm
       fields={registrationFields}
       schema={registerSchema}
@@ -45,8 +47,8 @@ const RegisterForm = ({ onSubmit, isSubmitting }) => (
       isSubmitting={isSubmitting}
     />
     <div className="mt-6 text-center text-sm">
-      <span className="text-gray-600">Already have an account? </span>
-      <Link to="/login" className="text-blue-600 hover:underline font-semibold">
+      <span className="text-gray-500">Already have an account? </span>
+      <Link to="/login" className="text-blue-600 hover:underline font-medium">
         Login
       </Link>
     </div>

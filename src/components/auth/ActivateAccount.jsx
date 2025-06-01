@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import { ROUTES } from '../../constants';
 
-const    = () => {
+const  ActivateAccount  = () => {
   const { activate, loading, error } = useAuth();
   const { token } = useParams();
   const navigate = useNavigate();

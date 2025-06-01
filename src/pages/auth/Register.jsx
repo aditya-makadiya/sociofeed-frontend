@@ -5,6 +5,7 @@ import {
   showSuccessToast,
   showErrorToast,
 } from "../../components/notifications/toastUtils";
+import { motion } from "framer-motion";
 
 const RegistrationPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,10 +29,15 @@ const RegistrationPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-500 px-4">
+      <motion.div
+        initial={{ x: 100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="w-full max-w-md"
+      >
         <RegisterForm onSubmit={handleRegister} isSubmitting={isSubmitting} />
-      </div>
+      </motion.div>
     </div>
   );
 };

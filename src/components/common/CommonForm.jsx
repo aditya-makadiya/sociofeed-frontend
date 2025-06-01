@@ -1,6 +1,8 @@
 import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { motion } from "framer-motion";
+import { TextField, Button } from "@mui/material";
 
 const CommonForm = ({
   fields,
@@ -22,16 +24,19 @@ const CommonForm = ({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 w-full max-w-sm mx-auto"
+      className="space-y-6 w-full max-w-md mx-auto"
     >
-      {fields.map((field) => (
-        <div
+      {fields.map((field, index) => (
+        <motion.div
           key={field.name}
-          className="flex items-start justify-between gap-4"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: index * 0.1 }}
+          className="flex items-center justify-between gap-4"
         >
           <label
             htmlFor={field.name}
-            className="w-1/3 pt-2 text-sm font-medium text-gray-700"
+            className="w-1/3 text-sm font-medium text-gray-600"
           >
             {field.label}
           </label>
@@ -40,13 +45,18 @@ const CommonForm = ({
               name={field.name}
               control={control}
               render={({ field: controllerField }) => (
-                <input
+                <TextField
                   {...controllerField}
                   id={field.name}
                   type={field.type}
                   placeholder={field.placeholder}
                   autoComplete={field.autoComplete}
-                  className="border rounded px-3 py-2 text-sm"
+                  variant="outlined"
+                  size="small"
+                  className="w-full rounded-lg"
+                  InputProps={{
+                    className: "border rounded-lg px-4 py-2 text-sm bg-gray-50",
+                  }}
                 />
               )}
             />
@@ -56,16 +66,25 @@ const CommonForm = ({
               </span>
             )}
           </div>
-        </div>
+        </motion.div>
       ))}
 
-      <button
-        type="submit"
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-sm"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? "Submitting..." : submitLabel}
-      </button>
+      <motion.div whileHover={{ scale: 1.05 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={isSubmitting}
+          className="w-full py-3 rounded-full text-sm font-medium tracking-wide"
+          sx={{
+            backgroundColor: "#2563eb",
+            "&:hover": { backgroundColor: "#1d4ed8" },
+            textTransform: "none",
+          }}
+        >
+          {isSubmitting ? "Submitting..." : submitLabel}
+        </Button>
+      </motion.div>
     </form>
   );
 };
