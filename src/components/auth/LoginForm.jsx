@@ -20,7 +20,7 @@ const loginFields = [
   },
 ];
 
-const LoginForm = ({ onSubmit, isSubmitting }) => (
+const LoginForm = ({ onSubmit, isSubmitting, serverError }) => (
   <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
     <h2 className="text-2xl font-extrabold text-center mb-8 text-gray-900 tracking-tight">
       Sign Into Your Account
@@ -31,6 +31,7 @@ const LoginForm = ({ onSubmit, isSubmitting }) => (
       onSubmit={onSubmit}
       submitLabel="Login"
       isSubmitting={isSubmitting}
+      serverError={serverError}
     />
     <div className="mt-6 flex flex-col items-center gap-2 text-sm">
       <span className="text-gray-500">

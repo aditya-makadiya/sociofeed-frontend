@@ -1,6 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import api from '../../utils/api/endpoints';
-import { toast } from 'react-toastify';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import authService from "../../services/authService";
 
 const initialState = {
   user: null,
@@ -9,135 +8,113 @@ const initialState = {
   error: null,
 };
 
-// Register user
 export const register = createAsyncThunk(
-  'auth/register',
+  "auth/register",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.register(data);
-      toast.success('Registration successful. Check your email to activate.');
-      return response.data;
+      const response = await authService.registerUser(data);
+      return response.data.user; // { username, email }
     } catch (error) {
-      const msg = error.response?.data?.message || 'Registration failed';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg = error.response?.data?.message || "Registration failed";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
-// Login user
 export const login = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await api.login(data);
-      toast.success('Login successful!');
-      return response.data.user;
+      const response = await authService.loginUser(data);
+      return response.data.user; // { id, username, email }
     } catch (error) {
-      const msg = error.response?.data?.message || 'Login failed';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg = error.response?.data?.message || "Login failed";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
-// Activate account
 export const activate = createAsyncThunk(
-  'auth/activate',
+  "auth/activate",
   async (token, { rejectWithValue }) => {
     try {
-      const response = await api.activate(token);
-      toast.success('Account activated successfully.');
-      return response.data;
+      const response = await authService.activateAccount(token);
+      return response.data.user; // { id, username, email }
     } catch (error) {
-      const msg = error.response?.data?.message || 'Activation failed';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg = error.response?.data?.message || "Activation failed";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
-// Forgot password
 export const forgotPassword = createAsyncThunk(
-  'auth/forgotPassword',
+  "auth/forgotPassword",
   async (data, { rejectWithValue }) => {
     try {
-      await api.forgotPassword(data);
-      toast.success('Password reset email sent.');
-      return;
+      await authService.forgotPassword(data);
+      return; // No data returned
     } catch (error) {
-      const msg = error.response?.data?.message || 'Failed to send reset email';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg = error.response?.data?.message || "Failed to send reset email";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
-// Reset password
 export const resetPassword = createAsyncThunk(
-  'auth/resetPassword',
+  "auth/resetPassword",
   async ({ token, data }, { rejectWithValue }) => {
     try {
-      await api.resetPassword(token, data);
-      toast.success('Password reset successful.');
-      return;
+      await authService.resetPassword(token, data);
+      return; // No data returned
     } catch (error) {
-      const msg = error.response?.data?.message || 'Password reset failed';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg = error.response?.data?.message || "Password reset failed";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
-// Resend activation
 export const resendActivation = createAsyncThunk(
-  'auth/resendActivation',
+  "auth/resendActivation",
   async (data, { rejectWithValue }) => {
     try {
-      await api.resendActivation(data);
-      toast.success('Activation email resent.');
+      await authService.resendActivation(data);
       return;
     } catch (error) {
-      const msg = error.response?.data?.message || 'Failed to resend activation email';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg =
+        error.response?.data?.message || "Failed to resend activation email";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
-// Refresh token
 export const refreshToken = createAsyncThunk(
-  'auth/refreshToken',
+  "auth/refreshToken",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.refreshToken();
-      return response.data.user;
+      const response = await authService.refreshToken();
+      return response.data.user; // { id, username, email }
     } catch (error) {
-      const msg = error.response?.data?.message || 'Token refresh failed';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg = error.response?.data?.message || "Token refresh failed";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
-// Logout
 export const logout = createAsyncThunk(
-  'auth/logout',
+  "auth/logout",
   async (_, { rejectWithValue }) => {
     try {
-      await api.logout();
-      toast.success('Logged out successfully.');
+      await authService.logoutUser();
       return;
     } catch (error) {
-      const msg = error.response?.data?.message || 'Logout failed';
-      toast.error(msg);
-      return rejectWithValue({ message: msg });
+      const msg = error.response?.data?.message || "Logout failed";
+      return rejectWithValue(msg);
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     clearError: (state) => {
@@ -146,19 +123,19 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Register
       .addCase(register.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state) => {
+      .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
+        state.user = action.payload;
+        state.isAuthenticated = false; // User not logged in yet
       })
       .addCase(register.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
-      // Login
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -170,21 +147,20 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
-      // Activate
       .addCase(activate.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(activate.fulfilled, (state) => {
+      .addCase(activate.fulfilled, (state, action) => {
         state.loading = false;
+        state.user = action.payload;
       })
       .addCase(activate.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
-      // Forgot Password
       .addCase(forgotPassword.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -194,9 +170,8 @@ const authSlice = createSlice({
       })
       .addCase(forgotPassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
-      // Reset Password
       .addCase(resetPassword.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -206,9 +181,8 @@ const authSlice = createSlice({
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
-      // Resend Activation
       .addCase(resendActivation.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -218,9 +192,8 @@ const authSlice = createSlice({
       })
       .addCase(resendActivation.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       })
-      // Refresh Token
       .addCase(refreshToken.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -232,11 +205,10 @@ const authSlice = createSlice({
       })
       .addCase(refreshToken.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
         state.user = null;
         state.isAuthenticated = false;
       })
-      // Logout
       .addCase(logout.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -248,7 +220,7 @@ const authSlice = createSlice({
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.payload;
       });
   },
 });

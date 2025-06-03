@@ -1,40 +1,25 @@
 import React, { useState } from "react";
-import endpoints from "../../utils/api/endpoints";
-import {
-  showSuccessToast,
-  showErrorToast,
-} from "../../components/notifications/toastUtils";
-import { motion } from "framer-motion";
 import { Box, Paper, Typography, TextField, Button } from "@mui/material";
+import { motion } from "framer-motion";
+import useAuth from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const ForgotPasswordPage = () => {
+  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState("");
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const { forgotPassword, loading, error, clearError } = useAuth();
+  const [isSent, setIsSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      await endpoints.forgotPassword({ identifier });
-      setSent(true);
-      showSuccessToast("Reset password link sent! Please check your email.");
-    } catch (err) {
-      const errorMsg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to send reset password link.";
-      setError(errorMsg);
-      showErrorToast(errorMsg);
-    } finally {
-      setLoading(false);
+    const result = await forgotPassword({ identifier });
+    if (result?.type === "auth/forgotPassword/fulfilled") {
+      setIsSent(true);
     }
   };
 
   return (
-    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-500 px-4">
+    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-600 px-6">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -51,22 +36,22 @@ const ForgotPasswordPage = () => {
             className="flex flex-col items-center"
           >
             <Typography
-              variant="h5"
+              variant="h6"
               className="font-extrabold text-gray-900 mb-4 tracking-tight"
             >
               Forgot Password
             </Typography>
-            {sent ? (
+            {isSent ? (
               <>
                 <Typography className="mb-6 text-green-600 text-sm text-center font-medium">
-                  If that email is registered, you’ll receive a password reset
-                  link soon.
+                  If that email or username is registered, you’ll receive a
+                  password reset link soon.
                 </Typography>
                 <motion.div whileHover={{ scale: 1.05 }}>
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => (window.location.href = "/login")}
+                    onClick={() => navigate("/login")}
                     fullWidth
                     className="py-3 rounded-full text-sm font-medium tracking-wide"
                     sx={{
@@ -84,20 +69,17 @@ const ForgotPasswordPage = () => {
                 {error && (
                   <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg flex justify-between items-center w-full">
                     <span>{error}</span>
-                    <button
-                      onClick={() => setError(null)}
-                      className="text-red-700"
-                    >
+                    <button onClick={clearError} className="text-red-700">
                       ✕
                     </button>
                   </div>
                 )}
                 <Typography className="mb-6 text-gray-500 text-sm text-center">
-                  Enter your email to receive a password reset link.
+                  Enter your email or username to receive a password reset link.
                 </Typography>
                 <TextField
-                  label="Email"
-                  type="email"
+                  label="Email or Username"
+                  type="text"
                   fullWidth
                   required
                   value={identifier}

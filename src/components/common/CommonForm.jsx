@@ -2,7 +2,7 @@ import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { motion } from "framer-motion";
-import { TextField, Button } from "@mui/material";
+import { TextField, Button, CircularProgress } from "@mui/material";
 
 const CommonForm = ({
   fields,
@@ -11,6 +11,7 @@ const CommonForm = ({
   submitLabel = "Submit",
   defaultValues = {},
   isSubmitting = false,
+  serverError = null,
 }) => {
   const {
     control,
@@ -53,9 +54,14 @@ const CommonForm = ({
                   autoComplete={field.autoComplete}
                   variant="outlined"
                   size="small"
-                  className="w-full rounded-lg"
-                  InputProps={{
-                    className: "border rounded-lg px-4 py-2 text-sm bg-gray-50",
+                  className="w-full"
+                  aria-invalid={!!errors[field.name]}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "0.5rem",
+                      backgroundColor: "#f9fafb",
+                      padding: "0.5rem 1rem",
+                    },
                   }}
                 />
               )}
@@ -68,7 +74,9 @@ const CommonForm = ({
           </div>
         </motion.div>
       ))}
-
+      {serverError && (
+        <p className="text-red-500 text-sm text-center mt-2">{serverError}</p>
+      )}
       <motion.div whileHover={{ scale: 1.05 }}>
         <Button
           type="submit"
@@ -82,7 +90,14 @@ const CommonForm = ({
             textTransform: "none",
           }}
         >
-          {isSubmitting ? "Submitting..." : submitLabel}
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <CircularProgress size={20} color="inherit" />
+              Submitting...
+            </span>
+          ) : (
+            submitLabel
+          )}
         </Button>
       </motion.div>
     </form>

@@ -1,50 +1,36 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import endpoints from "../../utils/api/endpoints";
-import {
-  showSuccessToast,
-  showErrorToast,
-} from "../../components/notifications/toastUtils";
-import { motion } from "framer-motion";
 import { Box, Paper, Typography, TextField, Button } from "@mui/material";
+import { motion } from "framer-motion";
+import useAuth from "../../hooks/useAuth";
+import { showErrorToast } from "../../components/notifications/toastUtils";
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const { resetPassword, loading, error, clearError } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState(null);
+  const [isDone, setIsDone] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
       showErrorToast("Passwords do not match.");
       return;
     }
-    setLoading(true);
-    setError(null);
-    try {
-      await endpoints.resetPassword(token, { password, confirmPassword });
-      setDone(true);
-      showSuccessToast("Password reset successful! You can now log in.");
-    } catch (err) {
-      console.log(err.message);
-      const errorMsg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to reset password.";
-      setError(errorMsg);
-      showErrorToast(errorMsg);
-    } finally {
-      setLoading(false);
+    const result = await resetPassword({
+      token,
+      data: { password, confirmPassword },
+    });
+    if (result?.type === "auth/resetPassword/fulfilled") {
+      setIsDone(true);
+      setTimeout(() => navigate("/login"), 2000);
     }
   };
 
   return (
-    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-500 px-4">
+    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-600 px-6">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -66,7 +52,7 @@ const ResetPasswordPage = () => {
             >
               Reset Password
             </Typography>
-            {done ? (
+            {isDone ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -74,7 +60,7 @@ const ResetPasswordPage = () => {
                 className="flex flex-col items-center w-full"
               >
                 <Typography className="mb-6 text-green-600 text-sm text-center font-medium">
-                  Password reset successful! You can now log in.
+                  Password reset successful! Redirecting to login...
                 </Typography>
                 <motion.div whileHover={{ scale: 1.05 }}>
                   <Button
@@ -98,10 +84,7 @@ const ResetPasswordPage = () => {
                 {error && (
                   <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg flex justify-between items-center w-full">
                     <span>{error}</span>
-                    <button
-                      onClick={() => setError(null)}
-                      className="text-red-700"
-                    >
+                    <button onClick={clearError} className="text-red-700">
                       ✕
                     </button>
                   </div>

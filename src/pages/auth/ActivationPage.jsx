@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import endpoints from "../../utils/api/endpoints";
 import {
   Box,
   Typography,
@@ -9,41 +8,36 @@ import {
   Paper,
 } from "@mui/material";
 import { motion } from "framer-motion";
+import useAuth from "../../hooks/useAuth";
 
 const ActivationPage = () => {
   const { token } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [activated, setActivated] = useState(false);
-  const [error, setError] = useState("");
+  const { activateAccount, loading, error, clearError } = useAuth();
+  const [isActivated, setIsActivated] = useState(false);
 
   useEffect(() => {
-    const activateAccount = async () => {
-      setLoading(true);
+    const activate = async () => {
+      if (!token) {
+        console.error("Invalid activation link.");
+        clearError();
+        return;
+      }
       try {
-        await endpoints.activate(token);
-        setActivated(true);
+        const result = await activateAccount(token);
+        if (result?.type === "auth/activate/fulfilled") {
+          setIsActivated(true);
+          setTimeout(() => navigate("/login"), 2000); // Redirect after 2s
+        }
       } catch (err) {
-        setError(
-          err?.response?.data?.message ||
-            err?.message ||
-            "Activation failed. The link may be invalid or expired."
-        );
-      } finally {
-        setLoading(false);
+        console.error("Activation error:", err.message);
       }
     };
-
-    if (token) {
-      activateAccount();
-    } else {
-      setError("Invalid activation link.");
-      setLoading(false);
-    }
+    activate();
   }, [token]);
 
   return (
-    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-500 px-4">
+    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-600 px-6">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -65,7 +59,7 @@ const ActivationPage = () => {
                 Activating your account...
               </Typography>
             </motion.div>
-          ) : activated ? (
+          ) : isActivated ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -79,8 +73,8 @@ const ActivationPage = () => {
                 Account Activated!
               </Typography>
               <Typography className="mb-6 text-gray-500 text-sm text-center">
-                Your account has been successfully activated. You can now log
-                in.
+                Your account has been successfully activated. Redirecting to
+                login...
               </Typography>
               <motion.div whileHover={{ scale: 1.05 }}>
                 <Button
@@ -110,13 +104,16 @@ const ActivationPage = () => {
                 Activation Failed
               </Typography>
               <Typography className="mb-6 text-gray-500 text-sm text-center">
-                {error}
+                {error || "The activation link may be invalid or expired."}
               </Typography>
               <motion.div whileHover={{ scale: 1.05 }}>
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => navigate("/login")}
+                  onClick={() => {
+                    clearError();
+                    navigate("/login");
+                  }}
                   fullWidth
                   className="py-3 rounded-full text-sm font-medium tracking-wide"
                   sx={{
