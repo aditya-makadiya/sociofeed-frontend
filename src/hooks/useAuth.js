@@ -10,6 +10,7 @@ import {
   refreshToken,
   logout,
   clearError,
+  getMe,
 } from "../app/slices/authSlice";
 import {
   showSuccessToast,
@@ -19,6 +20,7 @@ import {
 const useAuth = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const { user, isAuthenticated, loading, error } = useSelector(
     (state) => state.auth,
   );
@@ -52,9 +54,12 @@ const useAuth = () => {
         password: data.password,
       };
       const result = await dispatch(login(loginData));
+      console.log(user);
+
       if (login.fulfilled.match(result)) {
         showSuccessToast("Login successful!");
-        navigate("/home");
+        navigate("/");
+        console.log(result);
       }
       return result;
     } catch (error) {
@@ -102,6 +107,32 @@ const useAuth = () => {
     }
   };
 
+  const logoutUser = async () => {
+    try {
+      const result = await dispatch(logout());
+      if (logout.fulfilled.match(result)) {
+        showSuccessToast("Logged out successfully!");
+        navigate("/login");
+      }
+    } catch (error) {
+      showErrorToast(error.message || "Failed to Logout.");
+      throw error;
+    }
+  };
+
+  const getUser = async () => {
+    try {
+      const result = await dispatch(getMe());
+      if (getMe.fulfilled.match(result)) {
+        return result.payload;
+      }
+      throw new Error(result.payload || "Failed to fetch user");
+    } catch (error) {
+      showErrorToast(error.message || "Failed to fetch user");
+      throw error;
+    }
+  };
+
   return {
     user,
     isAuthenticated,
@@ -109,9 +140,11 @@ const useAuth = () => {
     error,
     registerUser,
     loginUser,
+    logoutUser,
     activateAccount,
     forgotPassword: forgotPasswordRequest,
     resetPassword: resetPasswordRequest,
+    getUser,
     resendActivation: async (data) => {
       const result = await dispatch(resendActivation(data));
       if (resendActivation.fulfilled.match(result)) {
@@ -126,14 +159,7 @@ const useAuth = () => {
       }
       return result;
     },
-    logout: async () => {
-      const result = await dispatch(logout());
-      if (logout.fulfilled.match(result)) {
-        showSuccessToast("Logged out successfully!");
-        navigate("/login");
-      }
-      return result;
-    },
+
     clearError: () => dispatch(clearError()),
   };
 };

@@ -1,12 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "../../services/authService";
-
-const initialState = {
-  user: null,
-  isAuthenticated: false,
-  loading: false,
-  error: null,
-};
+import Cookies from "js-cookie";
 
 export const register = createAsyncThunk(
   "auth/register",
@@ -28,6 +22,8 @@ export const login = createAsyncThunk(
       const response = await authService.loginUser(data);
       return response.data.user; // { id, username, email }
     } catch (error) {
+      console.log(error);
+
       const msg = error.response?.data?.message || "Login failed";
       return rejectWithValue(msg);
     }
@@ -112,6 +108,36 @@ export const logout = createAsyncThunk(
     }
   },
 );
+
+const getUserFromCookie = () => {
+  try {
+    const user = Cookies.get("user");
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error("Failed to get user from Cookie:", error);
+    return null;
+  }
+};
+
+export const getMe = createAsyncThunk(
+  "auth/getMe",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await authService.getMe();
+      return response.data.user; // { id, username, email, isActive }
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to fetch user";
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+const initialState = {
+  user: getUserFromCookie(),
+  isAuthenticated: !!getUserFromCookie(),
+  loading: false,
+  error: null,
+};
 
 const authSlice = createSlice({
   name: "auth",
@@ -221,6 +247,21 @@ const authSlice = createSlice({
       .addCase(logout.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(getMe.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMe.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(getMe.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.user = null;
+        state.isAuthenticated = false;
       });
   },
 });

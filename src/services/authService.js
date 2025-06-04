@@ -8,6 +8,8 @@ const authService = {
     return response; // response.data from interceptor
   },
   loginUser: async (data) => {
+    console.log("Login Payload:", data);
+
     const response = await apiClient.post("/auth/login", data);
     return response;
   },
@@ -36,6 +38,12 @@ const authService = {
   },
   logoutUser: async () => {
     const response = await apiClient.post("/auth/logout");
+    return response;
+  },
+  getMe: async () => {
+    console.log("Fetching current user");
+    const response = await apiClient.get("/auth/getMe");
+    console.log("getMe response:", response);
     return response;
   },
 };
