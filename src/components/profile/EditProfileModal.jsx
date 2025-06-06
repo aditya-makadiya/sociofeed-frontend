@@ -15,16 +15,17 @@ import {
   PhotoCamera as PhotoCameraIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import Cropper from "react-easy-crop";
 import { useDispatch } from "react-redux";
 import {
   updateProfile,
   updateAvatar,
   resetAvatar,
 } from "../../app/slices/profileSlice";
+import CropModal from "./CropModal";
 
 const EditProfileModal = ({ open, onClose, user, onProfileUpdate }) => {
   const [bio, setBio] = useState(user?.bio || "");
+  const [username, setUsername] = useState(user?.username || "");
   const [avatar, setAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || "");
   const [loading, setLoading] = useState(false);
@@ -41,13 +42,10 @@ const EditProfileModal = ({ open, onClose, user, onProfileUpdate }) => {
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         setError("Please select a valid image file");
         return;
       }
-
-      // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         setError("Image size should be less than 5MB");
         return;
@@ -122,7 +120,6 @@ const EditProfileModal = ({ open, onClose, user, onProfileUpdate }) => {
       setZoom(1);
     } catch (err) {
       console.log(err);
-
       setError("Failed to crop image");
     }
   };
@@ -173,9 +170,9 @@ const EditProfileModal = ({ open, onClose, user, onProfileUpdate }) => {
     setSuccess("");
 
     try {
-      // Update bio first
+      // Update profile with username and bio
       const result = await dispatch(
-        updateProfile({ userId: user.id, data: { bio } }),
+        updateProfile({ userId: user.id, data: { username, bio } }),
       );
       if (updateProfile.fulfilled.match(result)) {
         let updatedUser = result.payload;
@@ -213,6 +210,7 @@ const EditProfileModal = ({ open, onClose, user, onProfileUpdate }) => {
   const handleClose = () => {
     if (!loading) {
       setBio(user?.bio || "");
+      setUsername(user?.username || "");
       setAvatar(null);
       setAvatarPreview(user?.avatar || "");
       setError("");
@@ -336,6 +334,20 @@ const EditProfileModal = ({ open, onClose, user, onProfileUpdate }) => {
             />
           </Box>
 
+          {/* Username Section */}
+          <Box mb={3}>
+            <TextField
+              fullWidth
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+              disabled={loading}
+              inputProps={{ maxLength: 50 }}
+              helperText={`${username.length}/50 characters`}
+            />
+          </Box>
+
           {/* Bio Section */}
           <Box mb={3}>
             <TextField
@@ -369,83 +381,17 @@ const EditProfileModal = ({ open, onClose, user, onProfileUpdate }) => {
         </Box>
       </Modal>
 
-      {/* Crop Modal */}
-      <Modal
-        open={cropModalOpen}
-        onClose={handleCropCancel}
-        aria-labelledby="crop-image-modal"
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backdropFilter: "blur(8px)",
-          backgroundColor: "rgba(0, 0, 0, 0.55)",
-        }}
-      >
-        <Box
-          sx={{
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-            width: { xs: "90%", sm: "500px" },
-            maxHeight: "90vh",
-            overflow: "auto",
-          }}
-        >
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={3}
-          >
-            <Typography variant="h6" component="h2" fontWeight="bold">
-              Crop Image
-            </Typography>
-            <IconButton onClick={handleCropCancel}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-
-          <Box sx={{ position: "relative", width: "100%", height: 300 }}>
-            <Cropper
-              image={imageToCrop}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-              cropShape="round"
-              showGrid={false}
-            />
-          </Box>
-
-          <Box mt={2}>
-            <Typography variant="body2" mb={1}>
-              Zoom
-            </Typography>
-            <input
-              type="range"
-              value={zoom}
-              min={1}
-              max={3}
-              step={0.1}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              style={{ width: "100%" }}
-            />
-          </Box>
-
-          <Box display="flex" gap={2} justifyContent="flex-end" mt={3}>
-            <Button variant="outlined" onClick={handleCropCancel}>
-              Cancel
-            </Button>
-            <Button variant="contained" onClick={handleCropSave}>
-              Crop & Save
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
+      <CropModal
+        cropModalOpen={cropModalOpen}
+        handleCropCancel={handleCropCancel}
+        imageToCrop={imageToCrop}
+        crop={crop}
+        setCrop={setCrop}
+        zoom={zoom}
+        setZoom={setZoom}
+        onCropComplete={onCropComplete}
+        handleCropSave={handleCropSave}
+      />
     </>
   );
 };
