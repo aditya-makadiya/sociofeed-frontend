@@ -5,10 +5,13 @@ import profileService from "../../services/profileService";
 const initialState = {
   profile: null,
   posts: [],
+  users: [], // Add users array for search results
+  usersTotal: 0, // Total count for pagination
   loading: false,
   error: null,
-  followLoading: false, // Separate loading state for follow/unfollow actions
-  editLoading: false, // Separate loading state for edit profile actions
+  followLoading: false,
+  editLoading: false,
+  searchLoading: false, // Separate loading state for search
 };
 
 export const fetchProfile = createAsyncThunk(
@@ -40,6 +43,28 @@ export const fetchUserPosts = createAsyncThunk(
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to fetch posts";
       console.error("fetchUser Posts error:", error.response?.data || error);
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+export const searchUsers = createAsyncThunk(
+  "profile/searchUsers",
+  async ({ query, page = 1, pageSize = 10 }, { rejectWithValue }) => {
+    try {
+      const response = await profileService.searchUsers(query, page, pageSize);
+      console.log(query);
+
+      console.log("searchUsers response:", response.data);
+      return {
+        users: response.data.users,
+        total: response.data.total,
+        page: response.data.page,
+        pageSize: response.data.pageSize,
+      };
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to search users";
+      console.error("searchUsers error:", error.response?.data || error);
       return rejectWithValue(msg);
     }
   },
@@ -121,6 +146,10 @@ const profileSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    clearUsers: (state) => {
+      state.users = [];
+      state.usersTotal = 0;
     },
   },
   extraReducers: (builder) => {
@@ -225,9 +254,22 @@ const profileSlice = createSlice({
       .addCase(resetAvatar.rejected, (state, action) => {
         state.editLoading = false;
         state.error = action.payload;
+      })
+      .addCase(searchUsers.pending, (state) => {
+        state.searchLoading = true;
+        state.error = null;
+      })
+      .addCase(searchUsers.fulfilled, (state, action) => {
+        state.searchLoading = false;
+        state.users = action.payload.users;
+        state.usersTotal = action.payload.total;
+      })
+      .addCase(searchUsers.rejected, (state, action) => {
+        state.searchLoading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearError } = profileSlice.actions;
+export const { clearError, clearUsers } = profileSlice.actions;
 export default profileSlice.reducer;

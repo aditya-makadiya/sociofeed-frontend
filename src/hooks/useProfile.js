@@ -1,11 +1,12 @@
-// hooks/useProfile.js
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProfile,
   fetchUserPosts,
   followUser,
   unfollowUser,
+  searchUsers, // Imported thunk
   clearError,
+  clearUsers,
 } from "../app/slices/profileSlice";
 import {
   showErrorToast,
@@ -14,9 +15,16 @@ import {
 
 const useProfile = () => {
   const dispatch = useDispatch();
-  const { profile, posts, loading, followLoading, error } = useSelector(
-    (state) => state.profile,
-  );
+  const {
+    profile,
+    posts,
+    users,
+    usersTotal,
+    loading,
+    searchLoading,
+    followLoading,
+    error,
+  } = useSelector((state) => state.profile);
 
   const getUserProfile = async (userId) => {
     try {
@@ -44,12 +52,24 @@ const useProfile = () => {
     }
   };
 
+  const handleSearchUsers = async (query, page = 1, pageSize = 10) => {
+    try {
+      const result = await dispatch(searchUsers({ query, page, pageSize })); // Now correctly dispatches the imported thunk
+      if (searchUsers.fulfilled.match(result)) {
+        return result.payload;
+      }
+      throw new Error(result.payload || "Failed to search users");
+    } catch (error) {
+      showErrorToast(error.message || "Failed to search users");
+      return { users: [], total: 0 };
+    }
+  };
+
   const handleFollowUser = async (userId, isViewedProfile = false) => {
     try {
       const result = await dispatch(followUser({ userId, isViewedProfile }));
       if (followUser.fulfilled.match(result)) {
         showSuccessToast("Followed successfully!");
-        // Refetch profile if action is on the viewed profile
         if (isViewedProfile) {
           await dispatch(fetchProfile(userId));
         }
@@ -67,7 +87,6 @@ const useProfile = () => {
       const result = await dispatch(unfollowUser({ userId, isViewedProfile }));
       if (unfollowUser.fulfilled.match(result)) {
         showSuccessToast("Unfollowed successfully!");
-        // Refetch profile if action is on the viewed profile
         if (isViewedProfile) {
           await dispatch(fetchProfile(userId));
         }
@@ -83,14 +102,19 @@ const useProfile = () => {
   return {
     profile,
     posts,
+    users,
+    usersTotal,
     loading,
+    searchLoading,
     followLoading,
     error,
     getUserProfile,
     getUserPosts,
+    searchUsers: handleSearchUsers, // Export the renamed function
     followUser: handleFollowUser,
     unfollowUser: handleUnfollowUser,
     clearError: () => dispatch(clearError()),
+    clearUsers: () => dispatch(clearUsers()),
   };
 };
 

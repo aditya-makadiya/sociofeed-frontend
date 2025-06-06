@@ -80,6 +80,15 @@ const profileService = {
     console.log("Reset avatar response:", response);
     return response;
   },
+
+  searchUsers: async (query = "", page = 1, pageSize = 10) => {
+    console.log("Searching users with query:", query, { page, pageSize });
+    const response = await apiClient.get("/users", {
+      params: { search: query, page, pageSize },
+    });
+    console.log("Search users response:", response.data);
+    return response;
+  },
 };
 
 export default profileService;
