@@ -13,6 +13,7 @@ const ProfilePage = () => {
     profile,
     posts,
     loading: profileLoading,
+    postsLoading,
     error: profileError,
     getUserProfile,
     getUserPosts,
@@ -20,7 +21,7 @@ const ProfilePage = () => {
   const { id } = useParams();
 
   useEffect(() => {
-    if (!id && !user?.id) return; // Skip if no profileId
+    if (!id && !user?.id) return;
     const profileId = id || user.id;
     console.log("Fetching profile for ID:", profileId);
     Promise.all([
@@ -29,7 +30,7 @@ const ProfilePage = () => {
     ]).catch((error) => {
       console.error("Error fetching profile data:", error);
     });
-  }, [id]);
+  }, [id, user?.id]); // included user.id in dependency array
 
   if (!user) {
     return (
@@ -123,10 +124,10 @@ const ProfilePage = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full h-full"
+      className="w-full min-h-screen bg-gray-50"
     >
-      <div className="w-full max-w-4xl mx-auto">
-        <div className="space-y-6">
+      <div className="w-full max-w-6xl mx-auto px-4 py-6">
+        <div className="space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -137,12 +138,13 @@ const ProfilePage = () => {
               isOwnProfile={user?.id === (id || user.id)}
             />
           </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
           >
-            <UserPosts posts={posts} />
+            <UserPosts posts={posts} loading={postsLoading} />
           </motion.div>
         </div>
       </div>
