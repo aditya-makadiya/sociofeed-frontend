@@ -1,14 +1,20 @@
+// hooks/useProfile.js
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProfile,
   fetchUserPosts,
+  followUser,
+  unfollowUser,
   clearError,
 } from "../app/slices/profileSlice";
-import { showErrorToast } from "../components/notifications/toastUtils";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "../components/notifications/toastUtils";
 
 const useProfile = () => {
   const dispatch = useDispatch();
-  const { profile, posts, loading, error } = useSelector(
+  const { profile, posts, loading, followLoading, error } = useSelector(
     (state) => state.profile,
   );
 
@@ -38,13 +44,52 @@ const useProfile = () => {
     }
   };
 
+  const handleFollowUser = async (userId, isViewedProfile = false) => {
+    try {
+      const result = await dispatch(followUser({ userId, isViewedProfile }));
+      if (followUser.fulfilled.match(result)) {
+        showSuccessToast("Followed successfully!");
+        // Refetch profile if action is on the viewed profile
+        if (isViewedProfile) {
+          await dispatch(fetchProfile(userId));
+        }
+        return result.payload;
+      }
+      throw new Error(result.payload || "Failed to follow user");
+    } catch (error) {
+      showErrorToast(error.message || "Failed to follow user");
+      return null;
+    }
+  };
+
+  const handleUnfollowUser = async (userId, isViewedProfile = false) => {
+    try {
+      const result = await dispatch(unfollowUser({ userId, isViewedProfile }));
+      if (unfollowUser.fulfilled.match(result)) {
+        showSuccessToast("Unfollowed successfully!");
+        // Refetch profile if action is on the viewed profile
+        if (isViewedProfile) {
+          await dispatch(fetchProfile(userId));
+        }
+        return result.payload;
+      }
+      throw new Error(result.payload || "Failed to unfollow user");
+    } catch (error) {
+      showErrorToast(error.message || "Failed to unfollow user");
+      return null;
+    }
+  };
+
   return {
     profile,
     posts,
     loading,
+    followLoading,
     error,
     getUserProfile,
     getUserPosts,
+    followUser: handleFollowUser,
+    unfollowUser: handleUnfollowUser,
     clearError: () => dispatch(clearError()),
   };
 };

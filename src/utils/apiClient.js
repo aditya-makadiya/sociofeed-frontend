@@ -24,14 +24,15 @@ const processQueue = (error, token = null) => {
 // Request Interceptor (optional - add token if needed)
 apiClient.interceptors.request.use(
   (config) => {
-    // You can attach Authorization token here if required
-    // const token = localStorage.getItem("token");
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => {
+    return Promise.reject(error);
+  },
 );
 
 // Response Interceptor
