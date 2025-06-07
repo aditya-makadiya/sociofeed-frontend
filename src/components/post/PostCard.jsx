@@ -59,47 +59,34 @@ const PostCard = ({ post, onPostUpdate }) => {
     });
   }, [initialIsLiked, initialIsSaved, initialLikeCount, initialCommentCount]);
 
-  // components/post/PostCard.jsx
   const handleLikeToggle = async () => {
-    // Optimistic update for immediate UI feedback
     const newIsLiked = !localState.isLiked;
-    const newLikeCount = newIsLiked
-      ? localState.likeCount + 1
-      : Math.max(localState.likeCount - 1, 0); // Prevent negative counts
 
+    // Optimistic update for immediate UI feedback
     setLocalState((prev) => ({
       ...prev,
       isLiked: newIsLiked,
-      likeCount: newLikeCount,
+      likeCount: newIsLiked
+        ? prev.likeCount + 1
+        : Math.max(prev.likeCount - 1, 0),
     }));
 
     try {
-      // Pass current state to the hook
       const result = await handleLikePost(id, localState.isLiked);
       if (result) {
-        // ✅ IMPORTANT: Use server response, not optimistic calculation
         setLocalState((prev) => ({
           ...prev,
           isLiked: result.isLiked,
-          likeCount: result.likeCount, // Use actual server count
+          likeCount: result.likeCount,
         }));
-
-        // Notify parent component to update the original post data
-        if (onPostUpdate) {
-          onPostUpdate(id, {
-            isLiked: result.isLiked,
-            likeCount: result.likeCount, // Use actual server count
-          });
-        }
       }
     } catch (error) {
-      console.log(error);
-
+      console.error(error);
       // Revert optimistic update on error
       setLocalState((prev) => ({
         ...prev,
-        isLiked: localState.isLiked, // Revert to original state
-        likeCount: localState.likeCount, // Revert to original count
+        isLiked: !newIsLiked, // Revert to original state
+        likeCount: newIsLiked ? prev.likeCount - 1 : prev.likeCount + 1, // Revert like count
       }));
     }
   };
@@ -145,8 +132,6 @@ const PostCard = ({ post, onPostUpdate }) => {
       }
     } catch (error) {
       console.log(error);
-
-      // Error handled in hook
     }
   };
 
@@ -155,7 +140,9 @@ const PostCard = ({ post, onPostUpdate }) => {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 mb-4">
+        {" "}
+        {/* Add margin-bottom here */}
         {images && images.length > 0 && (
           <div className="relative w-full aspect-square overflow-hidden">
             <img
@@ -166,7 +153,6 @@ const PostCard = ({ post, onPostUpdate }) => {
             />
           </div>
         )}
-
         <div className="p-3 md:p-4">
           {content && (
             <Typography

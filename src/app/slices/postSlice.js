@@ -11,7 +11,26 @@ const initialState = {
   saveLoading: {},
   commentLoading: false,
   error: null,
+  hasMore: true, // Track if there are more posts to load
+  currentPage: 1, // Track the current page
 };
+
+export const fetchFeedPosts = createAsyncThunk(
+  "post/fetchFeedPosts",
+  async (page, { rejectWithValue }) => {
+    try {
+      const response = await postService.getFeedPosts(page);
+      return {
+        posts: response.data.posts,
+        total: response.data.total,
+        page: response.data.page,
+      };
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to fetch posts";
+      return rejectWithValue(msg);
+    }
+  },
+);
 
 // Toggle like post (handles both like and unlike)
 export const toggleLikePost = createAsyncThunk(
@@ -35,6 +54,19 @@ export const toggleLikePost = createAsyncThunk(
       };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to toggle like";
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+export const createPost = createAsyncThunk(
+  "post/createPost",
+  async ({ content }, { rejectWithValue }) => {
+    try {
+      const response = await postService.createPost({ content });
+      return response.data.post; // Adjust based on your API response
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to create post";
       return rejectWithValue(msg);
     }
   },
@@ -198,6 +230,36 @@ const postSlice = createSlice({
       })
       .addCase(getComments.rejected, (state, action) => {
         state.commentsLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchFeedPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchFeedPosts.fulfilled, (state, action) => {
+        state.loading = false;
+        // Filter out duplicates before appending
+        const newPosts = action.payload.posts.filter(
+          (newPost) => !state.posts.some((post) => post.id === newPost.id),
+        );
+        state.posts.push(...newPosts); // Append new posts
+        state.hasMore = newPosts.length > 0; // Check if there are more posts
+        state.currentPage += 1; // Increment the current page
+      })
+      .addCase(fetchFeedPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(createPost.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createPost.fulfilled, (state, action) => {
+        state.loading = false;
+        state.posts.unshift(action.payload); // Add the new post to the beginning of the list
+      })
+      .addCase(createPost.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       });
   },

@@ -47,6 +47,13 @@ const postService = {
     const response = await apiClient.get(`/posts/${postId}`);
     return response;
   },
+
+  getFeedPosts: async (page = 1, pageSize = 10) => {
+    const response = await apiClient.get(`/posts/feed`, {
+      params: { page, pageSize },
+    });
+    return response;
+  },
 };
 
 export default postService;
