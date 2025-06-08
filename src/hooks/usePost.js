@@ -31,13 +31,26 @@ const usePost = () => {
       const result = await dispatch(
         toggleLikePost({ postId, isCurrentlyLiked }),
       );
+      console.log("handleLikePost result:", {
+        type: result.type,
+        payload: result.payload,
+      }); // Debug
       if (toggleLikePost.fulfilled.match(result)) {
-        const { isLiked } = result.payload;
+        const { isLiked, likeCount } = result.payload;
+        console.log("handleLikePost success:", { isLiked, likeCount }); // Debug
         showSuccessToast(isLiked ? "Post liked!" : "Post unliked!");
-        return result.payload;
+        return {
+          isLiked,
+          likeCount: Number(likeCount) || 0,
+        };
       }
+      // Handle rejected action
       throw new Error(result.payload || "Failed to toggle like");
     } catch (error) {
+      console.error("handleLikePost error:", {
+        message: error.message,
+        stack: error.stack,
+      }); // Debug
       showErrorToast(error.message || "Failed to update like status");
       return null;
     }

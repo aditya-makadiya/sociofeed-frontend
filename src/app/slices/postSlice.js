@@ -1,4 +1,3 @@
-// app/slices/postSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import postService from "../../services/postService";
 
@@ -11,8 +10,9 @@ const initialState = {
   saveLoading: {},
   commentLoading: false,
   error: null,
-  hasMore: true, // Track if there are more posts to load
-  currentPage: 1, // Track the current page
+  hasMore: true,
+  currentPage: 1,
+  total: 0, // Add total to track total posts
 };
 
 export const fetchFeedPosts = createAsyncThunk(
@@ -32,6 +32,24 @@ export const fetchFeedPosts = createAsyncThunk(
   },
 );
 
+export const fetchSavedPosts = createAsyncThunk(
+  "post/fetchSavedPosts",
+  async (page, { rejectWithValue }) => {
+    try {
+      const response = await postService.getSavedPosts(page);
+      return {
+        posts: response.data.posts,
+        total: response.data.total,
+        page: response.data.page,
+      };
+    } catch (error) {
+      const msg =
+        error.response?.data?.message || "Failed to fetch saved posts";
+      return rejectWithValue(msg);
+    }
+  },
+);
+
 // Toggle like post (handles both like and unlike)
 export const toggleLikePost = createAsyncThunk(
   "post/toggleLike",
@@ -39,21 +57,28 @@ export const toggleLikePost = createAsyncThunk(
     try {
       let response;
       if (isCurrentlyLiked) {
-        // If currently liked, unlike it
         response = await postService.unlikePost(postId);
       } else {
-        // If not liked, like it
         response = await postService.likePost(postId);
       }
-
-      // ✅ CORRECT - Use server response directly
+      console.log("toggleLikePost response:", response); // Debug
+      if (!response.data || typeof response.data.likesCount !== "number") {
+        throw new Error("Invalid response format from server");
+      }
       return {
         postId,
         isLiked: !isCurrentlyLiked,
-        likeCount: response.data.likesCount, // Use actual count from server
+        likeCount: Number(response.data.likesCount) || 0,
       };
     } catch (error) {
-      const msg = error.response?.data?.message || "Failed to toggle like";
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to toggle like";
+      console.error("toggleLikePost error:", {
+        message: msg,
+        error: error.response?.data || error,
+      }); // Debug
       return rejectWithValue(msg);
     }
   },
@@ -82,10 +107,9 @@ export const toggleSavePost = createAsyncThunk(
         response = await postService.unsavePost(postId);
       } else {
         response = await postService.savePost(postId);
-        console.log(response);
       }
-
       return {
+        response,
         postId,
         isSaved: !isCurrentlySaved,
       };
@@ -104,8 +128,8 @@ export const addComment = createAsyncThunk(
       const response = await postService.addComment(postId, content);
       return {
         postId,
-        comment: response.data.comment,
-        commentCount: response.data.commentCount,
+        comment: response.data.data,
+        commentCount: response.data.data.commentCount || 0,
       };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to add comment";
@@ -122,8 +146,8 @@ export const getComments = createAsyncThunk(
       const response = await postService.getPostComments(postId, page, limit);
       return {
         postId,
-        comments: response.data.comments,
-        total: response.data.total,
+        comments: response.data.data.comments,
+        total: response.data.data.total,
       };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to fetch comments";
@@ -152,9 +176,55 @@ const postSlice = createSlice({
         state.posts[postIndex] = { ...state.posts[postIndex], ...updates };
       }
     },
+    resetPosts: (state) => {
+      state.posts = [];
+      state.currentPage = 1;
+      state.hasMore = true;
+      state.total = 0;
+    },
   },
   extraReducers: (builder) => {
     builder
+      // Fetch Feed Posts
+      .addCase(fetchFeedPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchFeedPosts.fulfilled, (state, action) => {
+        state.loading = false;
+        const newPosts = action.payload.posts.filter(
+          (newPost) => !state.posts.some((post) => post.id === newPost.id),
+        );
+        state.posts = [...state.posts, ...newPosts];
+        state.hasMore =
+          newPosts.length > 0 && state.posts.length < action.payload.total;
+        state.currentPage = action.payload.page;
+        state.total = action.payload.total;
+      })
+      .addCase(fetchFeedPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Fetch Saved Posts
+      .addCase(fetchSavedPosts.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSavedPosts.fulfilled, (state, action) => {
+        state.loading = false;
+        const newPosts = action.payload.posts.filter(
+          (newPost) => !state.posts.some((post) => post.id === newPost.id),
+        );
+        state.posts = [...state.posts, ...newPosts];
+        state.hasMore =
+          newPosts.length > 0 && state.posts.length < action.payload.total;
+        state.currentPage = action.payload.page;
+        state.total = action.payload.total;
+      })
+      .addCase(fetchSavedPosts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       // Toggle Like
       .addCase(toggleLikePost.pending, (state, action) => {
         state.likeLoading[action.meta.arg.postId] = true;
@@ -163,19 +233,17 @@ const postSlice = createSlice({
       .addCase(toggleLikePost.fulfilled, (state, action) => {
         const { postId, isLiked, likeCount } = action.payload;
         state.likeLoading[postId] = false;
-
-        // Update post in posts array if it exists
         const postIndex = state.posts.findIndex((post) => post.id === postId);
         if (postIndex !== -1) {
           state.posts[postIndex].isLiked = isLiked;
-          state.posts[postIndex].likeCount = likeCount;
+          state.posts[postIndex].likeCount = Number(likeCount) || 0; // Ensure number
+          console.log("Updated post:", state.posts[postIndex]); // Debug
         }
       })
       .addCase(toggleLikePost.rejected, (state, action) => {
         state.likeLoading[action.meta.arg.postId] = false;
         state.error = action.payload;
       })
-
       // Toggle Save
       .addCase(toggleSavePost.pending, (state, action) => {
         state.saveLoading[action.meta.arg.postId] = true;
@@ -184,8 +252,6 @@ const postSlice = createSlice({
       .addCase(toggleSavePost.fulfilled, (state, action) => {
         const { postId, isSaved } = action.payload;
         state.saveLoading[postId] = false;
-
-        // Update post in posts array if it exists
         const postIndex = state.posts.findIndex((post) => post.id === postId);
         if (postIndex !== -1) {
           state.posts[postIndex].isSaved = isSaved;
@@ -195,7 +261,6 @@ const postSlice = createSlice({
         state.saveLoading[action.meta.arg.postId] = false;
         state.error = action.payload;
       })
-
       // Add Comment
       .addCase(addComment.pending, (state) => {
         state.commentLoading = true;
@@ -204,21 +269,16 @@ const postSlice = createSlice({
       .addCase(addComment.fulfilled, (state, action) => {
         const { postId, comment, commentCount } = action.payload;
         state.commentLoading = false;
-
-        // Update post comment count
         const postIndex = state.posts.findIndex((post) => post.id === postId);
         if (postIndex !== -1) {
           state.posts[postIndex].commentCount = commentCount;
         }
-
-        // Add comment to comments array
         state.comments.unshift(comment);
       })
       .addCase(addComment.rejected, (state, action) => {
         state.commentLoading = false;
         state.error = action.payload;
       })
-
       // Get Comments
       .addCase(getComments.pending, (state) => {
         state.commentsLoading = true;
@@ -232,31 +292,14 @@ const postSlice = createSlice({
         state.commentsLoading = false;
         state.error = action.payload;
       })
-      .addCase(fetchFeedPosts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchFeedPosts.fulfilled, (state, action) => {
-        state.loading = false;
-        // Filter out duplicates before appending
-        const newPosts = action.payload.posts.filter(
-          (newPost) => !state.posts.some((post) => post.id === newPost.id),
-        );
-        state.posts.push(...newPosts); // Append new posts
-        state.hasMore = newPosts.length > 0; // Check if there are more posts
-        state.currentPage += 1; // Increment the current page
-      })
-      .addCase(fetchFeedPosts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+      // Create Post
       .addCase(createPost.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(createPost.fulfilled, (state, action) => {
         state.loading = false;
-        state.posts.unshift(action.payload); // Add the new post to the beginning of the list
+        state.posts.unshift(action.payload);
       })
       .addCase(createPost.rejected, (state, action) => {
         state.loading = false;
@@ -265,6 +308,11 @@ const postSlice = createSlice({
   },
 });
 
-export const { clearError, clearComments, setPosts, updatePostInList } =
-  postSlice.actions;
+export const {
+  clearError,
+  clearComments,
+  setPosts,
+  updatePostInList,
+  resetPosts,
+} = postSlice.actions;
 export default postSlice.reducer;

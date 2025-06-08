@@ -4,16 +4,38 @@ import apiClient from "../utils/apiClient";
 const postService = {
   // Like a post
   likePost: async (postId) => {
-    const response = await apiClient.post(`/posts/${postId}/like`);
-    return response;
+    try {
+      const response = await apiClient.post(`/posts/${postId}/like`);
+      console.log("likePost response:", JSON.stringify(response, null, 2)); // Log full response
+      if (!response?.data?.likesCount && response.data?.likesCount !== 0) {
+        throw new Error(
+          `Invalid likesCount in response: ${JSON.stringify(response)}`,
+        );
+      }
+      console.log("likePost returning:", response.data.likesCount); // Log return value
+      return response;
+    } catch (error) {
+      console.error("likePost error:", error.message, error.response?.data);
+      throw error;
+    }
   },
 
-  // Unlike a post
   unlikePost: async (postId) => {
-    const response = await apiClient.delete(`/posts/${postId}/unlike`);
-    return response;
+    try {
+      const response = await apiClient.delete(`/posts/${postId}/unlike`);
+      console.log("unlikePost response:", JSON.stringify(response, null, 2)); // Log full response
+      if (!response?.data?.likesCount && response.data?.likesCount !== 0) {
+        throw new Error(
+          `Invalid likesCount in response: ${JSON.stringify(response)}`,
+        );
+      }
+      console.log("unlikePost returning:", response.data.likesCount); // Log return value
+      return response;
+    } catch (error) {
+      console.error("unlikePost error:", error.message, error.response?.data);
+      throw error;
+    }
   },
-
   // Save a post
   savePost: async (postId) => {
     const response = await apiClient.post(`/posts/${postId}/save`);
@@ -50,6 +72,13 @@ const postService = {
 
   getFeedPosts: async (page = 1, pageSize = 10) => {
     const response = await apiClient.get(`/posts/feed`, {
+      params: { page, pageSize },
+    });
+    return response;
+  },
+
+  getSavedPosts: async (page = 1, pageSize = 10) => {
+    const response = await apiClient.get(`/posts/saved`, {
       params: { page, pageSize },
     });
     return response;
