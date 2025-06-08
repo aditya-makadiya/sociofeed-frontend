@@ -1,4 +1,3 @@
-// components/layout/Sidebar.jsx
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -7,6 +6,7 @@ import {
   FaCompass,
   FaBookmark,
   FaSignOutAlt,
+  FaPlus,
 } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
 
@@ -33,6 +33,7 @@ export default function Sidebar({ open, onToggle }) {
     },
     { to: "/explore", icon: FaCompass, label: "Explore" },
     { to: "/saved", icon: FaBookmark, label: "Saved" },
+    { to: "/create-post", icon: FaPlus, label: "Create Post" },
   ];
 
   return (

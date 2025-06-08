@@ -9,6 +9,7 @@ import ProfilePage from "./pages/user/ProfilePage";
 import AppShell from "./components/layout/Appshell";
 import ExplorePage from "./pages/main/ExplorePage";
 import SavedPostsPage from "./pages/user/SavedPostsPage";
+import CreatePostPage from "./pages/main/CreatePostPage";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import { Route, Routes } from "react-router-dom";
 
@@ -33,6 +34,7 @@ function App() {
           <Route path="/profile/:id" element={<ProfilePage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/saved" element={<SavedPostsPage />} />
+          <Route path="/create-post" element={<CreatePostPage />} />
         </Route>
       </Routes>
     </>

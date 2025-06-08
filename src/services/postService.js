@@ -83,6 +83,19 @@ const postService = {
     });
     return response;
   },
+  createPost: async (formData) => {
+    try {
+      const response = await apiClient.post("/posts", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error("createPost error:", error.message, error.response?.data);
+      throw error;
+    }
+  },
 };
 
 export default postService;

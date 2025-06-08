@@ -10,14 +10,18 @@ import {
   DialogActions,
   Button,
   Avatar,
+  Box,
 } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import CommentIcon from "@mui/icons-material/Comment";
-import SaveIcon from "@mui/icons-material/BookmarkBorder";
-import SavedIcon from "@mui/icons-material/Bookmark";
+import {
+  Favorite as FavoriteIcon,
+  FavoriteBorder as FavoriteBorderIcon,
+  Comment as CommentIcon,
+  BookmarkBorder as SaveIcon,
+  Bookmark as SavedIcon,
+} from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import DOMPurify from "dompurify";
 import usePost from "../../hooks/usePost";
 import { showErrorToast } from "../notifications/toastUtils";
 import postService from "../../services/postService";
@@ -25,23 +29,22 @@ import postService from "../../services/postService";
 const PostCard = ({ post, onPostUpdate }) => {
   const {
     id,
-    content,
-    images,
-    likeCount: initialLikeCount = 0,
-    commentCount: initialCommentCount = 0,
-    isLiked: initialIsLiked = false,
-    isSaved: initialIsSaved = false,
+    content = "",
+    images = [],
+    likeCount: initLike = 0,
+    commentCount: initComment = 0,
+    isLiked: initLiked = false,
+    isSaved: initSaved = false,
     user,
     createdAt,
   } = post;
 
   const [localState, setLocalState] = useState({
-    isLiked: initialIsLiked,
-    isSaved: initialIsSaved,
-    likeCount: Number(initialLikeCount) || 0,
-    commentCount: initialCommentCount,
+    isLiked: initLiked,
+    isSaved: initSaved,
+    likeCount: Number(initLike),
+    commentCount: Number(initComment),
   });
-
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
 
@@ -54,212 +57,175 @@ const PostCard = ({ post, onPostUpdate }) => {
     commentLoading,
   } = usePost();
 
+  // reset local state when props change
   useEffect(() => {
-    console.log("PostCard useEffect:", { initialLikeCount, localState }); // Debug
-    setLocalState((prev) => ({
-      ...prev,
-      isLiked: initialIsLiked,
-      isSaved: initialIsSaved,
-      likeCount: Number(initialLikeCount) || 0,
-      commentCount: initialCommentCount,
-    }));
-  }, [initialIsLiked, initialIsSaved, initialLikeCount, initialCommentCount]);
-
-  const handleLikeToggle = async () => {
-    const originalIsLiked = localState.isLiked;
-    const originalLikeCount = localState.likeCount;
-
-    // Optimistic update
-    const newIsLiked = !localState.isLiked;
-    const newLikeCount = newIsLiked
-      ? localState.likeCount + 1
-      : Math.max(localState.likeCount - 1, 0);
-
-    setLocalState((prev) => ({
-      ...prev,
-      isLiked: newIsLiked,
-      likeCount: newLikeCount,
-    }));
-
-    try {
-      const result = await handleLikePost(id, originalIsLiked);
-      console.log("handleLikeToggle result:", result); // Debug
-      if (result) {
-        setLocalState((prev) => ({
-          ...prev,
-          isLiked: result.isLiked,
-          likeCount: Number(result.likeCount) || 0,
-        }));
-        if (onPostUpdate) {
-          onPostUpdate(id, {
-            isLiked: result.isLiked,
-            likeCount: result.likeCount,
-          });
-        }
-      } else {
-        // Revert on null result
-        setLocalState((prev) => ({
-          ...prev,
-          isLiked: originalIsLiked,
-          likeCount: originalLikeCount,
-        }));
-        showErrorToast("Failed to update like status");
-      }
-    } catch (error) {
-      console.error("handleLikeToggle error:", {
-        message: error.message,
-        stack: error.stack,
-      }); // Debug
-      // Revert on error and fetch correct likeCount
-      try {
-        const postDetails = await postService.getPostDetails(id);
-        if (postDetails?.data) {
-          setLocalState((prev) => ({
-            ...prev,
-            isLiked: postDetails.data.isLiked,
-            likeCount: Number(postDetails.data.likeCount) || 0,
-          }));
-          if (onPostUpdate) {
-            onPostUpdate(id, {
-              isLiked: postDetails.data.isLiked,
-              likeCount: postDetails.data.likeCount,
-            });
-          }
-        } else {
-          setLocalState((prev) => ({
-            ...prev,
-            isLiked: originalIsLiked,
-            likeCount: originalLikeCount,
-          }));
-        }
-        if (
-          error.message === "Post already liked" ||
-          error.message === "Post not liked"
-        ) {
-          showErrorToast(error.message);
-        } else {
-          showErrorToast("Failed to update like status");
-        }
-      } catch (fetchError) {
-        console.error("Failed to fetch post details:", fetchError.message); // Debug
-        setLocalState((prev) => ({
-          ...prev,
-          isLiked: originalIsLiked,
-          likeCount: originalLikeCount,
-        }));
-        showErrorToast("Failed to sync like status");
-      }
-    }
-  };
-
-  const handleSaveToggle = async () => {
-    const newIsSaved = !localState.isSaved;
-    setLocalState((prev) => ({ ...prev, isSaved: newIsSaved }));
-
-    try {
-      const result = await handleSavePost(id, localState.isSaved);
-      console.log("handleSaveToggle result:", result); // Debug
-      if (result) {
-        setLocalState((prev) => ({ ...prev, isSaved: result.isSaved }));
-        if (onPostUpdate) {
-          onPostUpdate(id, { isSaved: result.isSaved });
-        }
-      }
-    } catch (error) {
-      console.error("handleSaveToggle error:", error.message); // Debug
-      setLocalState((prev) => ({ ...prev, isSaved: !newIsSaved }));
-    }
-  };
-
-  const handleCommentSubmit = async () => {
-    if (!commentText.trim()) return;
-
-    try {
-      const result = await handleAddComment(id, commentText);
-      console.log("handleCommentSubmit result:", result); // Debug
-      if (result) {
-        setLocalState((prev) => ({
-          ...prev,
-          commentCount: result.commentCount,
-        }));
-        setCommentText("");
-        setCommentDialogOpen(false);
-        if (onPostUpdate) {
-          onPostUpdate(id, { commentCount: result.commentCount });
-        }
-      }
-    } catch (error) {
-      console.error("handleCommentSubmit error:", error.message); // Debug
-    }
-  };
-
-  const isLikeLoading = likeLoading[id] || false;
-  const isSaveLoading = saveLoading[id] || false;
+    setLocalState({
+      isLiked: initLiked,
+      isSaved: initSaved,
+      likeCount: Number(initLike),
+      commentCount: Number(initComment),
+    });
+  }, [initLiked, initSaved, initLike, initComment]);
 
   const timeAgo = createdAt
     ? formatDistanceToNow(new Date(createdAt), { addSuffix: true })
     : "Unknown time";
 
+  const sanitized = DOMPurify.sanitize(content);
+
+  // -------- ACTION HANDLERS --------
+
+  const handleLikeToggle = async () => {
+    const { isLiked, likeCount } = localState;
+    const newLiked = !isLiked;
+    const newCount = newLiked ? likeCount + 1 : Math.max(likeCount - 1, 0);
+
+    setLocalState({ ...localState, isLiked: newLiked, likeCount: newCount });
+
+    try {
+      const res = await handleLikePost(id, isLiked);
+      if (res) {
+        setLocalState({
+          ...localState,
+          isLiked: res.isLiked,
+          likeCount: Number(res.likeCount),
+        });
+        onPostUpdate?.(id, {
+          isLiked: res.isLiked,
+          likeCount: res.likeCount,
+        });
+      } else {
+        throw new Error("null response");
+      }
+    } catch (err) {
+      console.error(err);
+      // try to reconcile with server state
+      try {
+        const detail = await postService.getPostDetails(id);
+        const srv = detail.data;
+        setLocalState({
+          ...localState,
+          isLiked: srv.isLiked,
+          likeCount: Number(srv.likeCount),
+        });
+        onPostUpdate?.(id, {
+          isLiked: srv.isLiked,
+          likeCount: srv.likeCount,
+        });
+      } catch {
+        setLocalState({
+          ...localState,
+          isLiked,
+          likeCount,
+        });
+      }
+      showErrorToast(err.message || "Like update failed");
+    }
+  };
+
+  const handleSaveToggle = async () => {
+    const newSaved = !localState.isSaved;
+    setLocalState({ ...localState, isSaved: newSaved });
+    try {
+      const res = await handleSavePost(id, localState.isSaved);
+      if (res) {
+        setLocalState({ ...localState, isSaved: res.isSaved });
+        onPostUpdate?.(id, { isSaved: res.isSaved });
+      }
+    } catch (err) {
+      console.error(err);
+      setLocalState({ ...localState, isSaved: !newSaved });
+      showErrorToast("Save update failed");
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim()) return;
+    try {
+      const res = await handleAddComment(id, commentText.trim());
+      if (res) {
+        setLocalState({
+          ...localState,
+          commentCount: Number(res.commentCount),
+        });
+        onPostUpdate?.(id, { commentCount: res.commentCount });
+        setCommentText("");
+        setCommentDialogOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+      showErrorToast("Comment failed");
+    }
+  };
+
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 mb-4">
-        <div className="p-3 md:p-4 flex items-center">
+      <Box
+        component="article"
+        className="bg-white rounded-lg shadow-md mb-6 transition hover:shadow-lg"
+      >
+        {/* Header */}
+        <Box className="p-4 flex items-center space-x-3">
           <Link to={`/profile/${user?.id}`}>
             <Avatar
-              src={user?.avatar || "/default-avatar.png"}
+              src={user?.avatar}
               alt={user?.username}
-              sx={{ width: 40, height: 40, mr: 2 }}
+              sx={{ width: 40, height: 40 }}
             />
           </Link>
-          <div>
+          <Box>
             <Link to={`/profile/${user?.id}`}>
               <Typography
                 variant="subtitle2"
-                className="font-semibold text-gray-900 hover:underline"
+                className="font-bold hover:underline"
               >
-                {user?.username || "Unknown User"}
+                {user?.username || "Unknown"}
               </Typography>
             </Link>
             <Typography variant="caption" className="text-gray-500">
               {timeAgo}
             </Typography>
-          </div>
-        </div>
-        {images && images.length > 0 && (
-          <div className="relative w-full aspect-square overflow-hidden">
+          </Box>
+        </Box>
+
+        {/* Image */}
+        {images.length > 0 && (
+          <Box className="w-full h-64 overflow-hidden">
             <img
               src={images[0]}
-              alt="Post image"
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+              alt="Post"
+              className="w-full h-full object-cover"
               loading="lazy"
             />
-          </div>
+          </Box>
         )}
-        <div className="p-3 md:p-4">
-          {content && (
-            <Typography
-              variant="body2"
-              className="text-gray-900 mb-3 line-clamp-3"
-              sx={{
+
+        {/* Content */}
+        <Box className="p-4">
+          {sanitized && (
+            <div
+              className="prose prose-sm text-gray-800 mb-4 line-clamp-3"
+              dangerouslySetInnerHTML={{ __html: sanitized }}
+              style={{
                 display: "-webkit-box",
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
               }}
-            >
-              {content}
-            </Typography>
+            />
           )}
-          <div className="flex items-center justify-between text-gray-600">
-            <div className="flex items-center space-x-1">
+
+          {/* Actions */}
+          <Box className="flex items-center justify-between text-gray-600">
+            {/* Like */}
+            <Box className="flex items-center space-x-1">
               <Tooltip title={localState.isLiked ? "Unlike" : "Like"}>
                 <span>
                   <IconButton
-                    onClick={handleLikeToggle}
                     size="small"
                     color={localState.isLiked ? "error" : "default"}
-                    className="p-1"
-                    disabled={isLikeLoading}
+                    disabled={likeLoading[id]}
+                    onClick={handleLikeToggle}
                   >
                     {localState.isLiked ? (
                       <FavoriteIcon fontSize="small" />
@@ -269,32 +235,32 @@ const PostCard = ({ post, onPostUpdate }) => {
                   </IconButton>
                 </span>
               </Tooltip>
-              <Typography variant="caption" className="text-xs">
-                {localState.likeCount}
-              </Typography>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Tooltip title="Add Comment">
+              <Typography variant="caption">{localState.likeCount}</Typography>
+            </Box>
+
+            {/* Comment */}
+            <Box className="flex items-center space-x-1">
+              <Tooltip title="Add comment">
                 <IconButton
                   size="small"
-                  className="p-1"
                   onClick={() => setCommentDialogOpen(true)}
                 >
                   <CommentIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Typography variant="caption" className="text-xs">
+              <Typography variant="caption">
                 {localState.commentCount}
               </Typography>
-            </div>
+            </Box>
+
+            {/* Save */}
             <Tooltip title={localState.isSaved ? "Unsave" : "Save"}>
               <span>
                 <IconButton
-                  onClick={handleSaveToggle}
                   size="small"
                   color={localState.isSaved ? "primary" : "default"}
-                  className="p-1"
-                  disabled={isSaveLoading}
+                  disabled={saveLoading[id]}
+                  onClick={handleSaveToggle}
                 >
                   {localState.isSaved ? (
                     <SavedIcon fontSize="small" />
@@ -304,38 +270,39 @@ const PostCard = ({ post, onPostUpdate }) => {
                 </IconButton>
               </span>
             </Tooltip>
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Comment Dialog */}
       <Dialog
         open={commentDialogOpen}
         onClose={() => setCommentDialogOpen(false)}
-        maxWidth="sm"
         fullWidth
+        maxWidth="sm"
       >
         <DialogTitle>Add Comment</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
-            margin="dense"
-            label="Write a comment..."
+            variant="outlined"
+            label="Your comment..."
             fullWidth
             multiline
-            rows={3}
-            variant="outlined"
+            minRows={3}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Share your thoughts..."
+            disabled={commentLoading}
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCommentDialogOpen(false)}>Cancel</Button>
           <Button
-            onClick={handleCommentSubmit}
             variant="contained"
+            onClick={handleCommentSubmit}
             disabled={!commentText.trim() || commentLoading}
           >
-            {commentLoading ? "Posting..." : "Post Comment"}
+            {commentLoading ? "Posting..." : "Post"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -12,7 +12,7 @@ const initialState = {
   error: null,
   hasMore: true,
   currentPage: 1,
-  total: 0, // Add total to track total posts
+  total: 0,
 };
 
 export const fetchFeedPosts = createAsyncThunk(
@@ -50,7 +50,6 @@ export const fetchSavedPosts = createAsyncThunk(
   },
 );
 
-// Toggle like post (handles both like and unlike)
 export const toggleLikePost = createAsyncThunk(
   "post/toggleLike",
   async ({ postId, isCurrentlyLiked }, { rejectWithValue }) => {
@@ -61,7 +60,7 @@ export const toggleLikePost = createAsyncThunk(
       } else {
         response = await postService.likePost(postId);
       }
-      console.log("toggleLikePost response:", response); // Debug
+      console.log("toggleLikePost response:", response);
       if (!response.data || typeof response.data.likesCount !== "number") {
         throw new Error("Invalid response format from server");
       }
@@ -78,7 +77,7 @@ export const toggleLikePost = createAsyncThunk(
       console.error("toggleLikePost error:", {
         message: msg,
         error: error.response?.data || error,
-      }); // Debug
+      });
       return rejectWithValue(msg);
     }
   },
@@ -86,10 +85,10 @@ export const toggleLikePost = createAsyncThunk(
 
 export const createPost = createAsyncThunk(
   "post/createPost",
-  async ({ content }, { rejectWithValue }) => {
+  async (formData, { rejectWithValue }) => {
     try {
-      const response = await postService.createPost({ content });
-      return response.data.post; // Adjust based on your API response
+      const response = await postService.createPost(formData);
+      return response.data.post;
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to create post";
       return rejectWithValue(msg);
@@ -97,9 +96,8 @@ export const createPost = createAsyncThunk(
   },
 );
 
-// Toggle save post (handles both save and unsave)
 export const toggleSavePost = createAsyncThunk(
-  "post/toggleSave",
+  "post/toggleSavePost",
   async ({ postId, isCurrentlySaved }, { rejectWithValue }) => {
     try {
       let response;
@@ -120,7 +118,6 @@ export const toggleSavePost = createAsyncThunk(
   },
 );
 
-// Add comment
 export const addComment = createAsyncThunk(
   "post/addComment",
   async ({ postId, content }, { rejectWithValue }) => {
@@ -138,7 +135,6 @@ export const addComment = createAsyncThunk(
   },
 );
 
-// Get comments
 export const getComments = createAsyncThunk(
   "post/getComments",
   async ({ postId, page = 1, limit = 10 }, { rejectWithValue }) => {
@@ -185,7 +181,6 @@ const postSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Feed Posts
       .addCase(fetchFeedPosts.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -205,7 +200,6 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Fetch Saved Posts
       .addCase(fetchSavedPosts.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -225,7 +219,6 @@ const postSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Toggle Like
       .addCase(toggleLikePost.pending, (state, action) => {
         state.likeLoading[action.meta.arg.postId] = true;
         state.error = null;
@@ -236,15 +229,14 @@ const postSlice = createSlice({
         const postIndex = state.posts.findIndex((post) => post.id === postId);
         if (postIndex !== -1) {
           state.posts[postIndex].isLiked = isLiked;
-          state.posts[postIndex].likeCount = Number(likeCount) || 0; // Ensure number
-          console.log("Updated post:", state.posts[postIndex]); // Debug
+          state.posts[postIndex].likeCount = Number(likeCount) || 0;
+          console.log("Updated post:", state.posts[postIndex]);
         }
       })
       .addCase(toggleLikePost.rejected, (state, action) => {
         state.likeLoading[action.meta.arg.postId] = false;
         state.error = action.payload;
       })
-      // Toggle Save
       .addCase(toggleSavePost.pending, (state, action) => {
         state.saveLoading[action.meta.arg.postId] = true;
         state.error = null;
@@ -261,7 +253,6 @@ const postSlice = createSlice({
         state.saveLoading[action.meta.arg.postId] = false;
         state.error = action.payload;
       })
-      // Add Comment
       .addCase(addComment.pending, (state) => {
         state.commentLoading = true;
         state.error = null;
@@ -279,7 +270,6 @@ const postSlice = createSlice({
         state.commentLoading = false;
         state.error = action.payload;
       })
-      // Get Comments
       .addCase(getComments.pending, (state) => {
         state.commentsLoading = true;
         state.error = null;
@@ -292,7 +282,6 @@ const postSlice = createSlice({
         state.commentsLoading = false;
         state.error = action.payload;
       })
-      // Create Post
       .addCase(createPost.pending, (state) => {
         state.loading = true;
         state.error = null;
