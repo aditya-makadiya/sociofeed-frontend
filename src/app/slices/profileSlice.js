@@ -1,17 +1,16 @@
-// app/slices/profileSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import profileService from "../../services/profileService";
 
 const initialState = {
   profile: null,
   posts: [],
-  users: [], // Add users array for search results
-  usersTotal: 0, // Total count for pagination
+  users: [],
+  usersTotal: 0,
   loading: false,
   error: null,
   followLoading: false,
   editLoading: false,
-  searchLoading: false, // Separate loading state for search
+  searchLoading: false,
 };
 
 export const fetchProfile = createAsyncThunk(
@@ -30,7 +29,7 @@ export const fetchProfile = createAsyncThunk(
 );
 
 export const fetchUserPosts = createAsyncThunk(
-  "profile/fetchUser Posts",
+  "profile/fetchUserPosts",
   async ({ userId, page = 1, pageSize = 10 }, { rejectWithValue }) => {
     try {
       const response = await profileService.getUserPosts(
@@ -38,11 +37,11 @@ export const fetchUserPosts = createAsyncThunk(
         page,
         pageSize,
       );
-      console.log("fetchUser Posts response:", response.data.posts);
+      console.log("fetchUserPosts response:", response.data.posts);
       return response.data.posts;
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to fetch posts";
-      console.error("fetchUser Posts error:", error.response?.data || error);
+      console.error("fetchUserPosts error:", error.response?.data || error);
       return rejectWithValue(msg);
     }
   },
@@ -53,8 +52,6 @@ export const searchUsers = createAsyncThunk(
   async ({ query, page = 1, pageSize = 10 }, { rejectWithValue }) => {
     try {
       const response = await profileService.searchUsers(query, page, pageSize);
-      console.log(query);
-
       console.log("searchUsers response:", response.data);
       return {
         users: response.data.users,
@@ -71,28 +68,28 @@ export const searchUsers = createAsyncThunk(
 );
 
 export const followUser = createAsyncThunk(
-  "profile/followUser ",
+  "profile/followUser",
   async ({ userId, isViewedProfile }, { rejectWithValue }) => {
     try {
       const response = await profileService.followUser(userId);
       return { userId, isViewedProfile, data: response.data };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to follow user";
-      console.error("followUser  error:", error.response?.data || error);
+      console.error("followUser error:", error.response?.data || error);
       return rejectWithValue(msg);
     }
   },
 );
 
 export const unfollowUser = createAsyncThunk(
-  "profile/unfollowUser ",
+  "profile/unfollowUser",
   async ({ userId, isViewedProfile }, { rejectWithValue }) => {
     try {
       const response = await profileService.unfollowUser(userId);
       return { userId, isViewedProfile, data: response.data };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to unfollow user";
-      console.error("unfollowUser  error:", error.response?.data || error);
+      console.error("unfollowUser error:", error.response?.data || error);
       return rejectWithValue(msg);
     }
   },
@@ -103,7 +100,7 @@ export const updateProfile = createAsyncThunk(
   async ({ userId, data }, { rejectWithValue }) => {
     try {
       const response = await profileService.updateProfile(userId, data);
-      return response.data.user; // Return updated user data
+      return response.data.user;
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to update profile";
       console.error("updateProfile error:", error.response?.data || error);
@@ -117,7 +114,7 @@ export const updateAvatar = createAsyncThunk(
   async ({ userId, file }, { rejectWithValue }) => {
     try {
       const response = await profileService.updateAvatar(userId, file);
-      return response.data.user; // Return updated user data
+      return response.data.user;
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to update avatar";
       console.error("updateAvatar error:", error.response?.data || error);
@@ -131,7 +128,7 @@ export const resetAvatar = createAsyncThunk(
   async (userId, { rejectWithValue }) => {
     try {
       const response = await profileService.resetAvatar(userId);
-      return response.data.user; // Return updated user data
+      return response.data.user;
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to reset avatar";
       console.error("resetAvatar error:", error.response?.data || error);
@@ -184,11 +181,14 @@ const profileSlice = createSlice({
       })
       .addCase(followUser.fulfilled, (state, action) => {
         state.followLoading = false;
-        // Only update counts if action is on the viewed profile
         if (state.profile && action.payload.isViewedProfile) {
           state.profile.isFollowing = true;
           state.profile.followerCount = (state.profile.followerCount || 0) + 1;
         }
+        // Update users array
+        state.users = state.users.map((u) =>
+          u.id === action.payload.userId ? { ...u, isFollowing: true } : u,
+        );
       })
       .addCase(followUser.rejected, (state, action) => {
         state.followLoading = false;
@@ -200,7 +200,6 @@ const profileSlice = createSlice({
       })
       .addCase(unfollowUser.fulfilled, (state, action) => {
         state.followLoading = false;
-        // Only update counts if action is on the viewed profile
         if (state.profile && action.payload.isViewedProfile) {
           state.profile.isFollowing = false;
           state.profile.followerCount = Math.max(
@@ -208,6 +207,10 @@ const profileSlice = createSlice({
             0,
           );
         }
+        // Update users array
+        state.users = state.users.map((u) =>
+          u.id === action.payload.userId ? { ...u, isFollowing: false } : u,
+        );
       })
       .addCase(unfollowUser.rejected, (state, action) => {
         state.followLoading = false;
@@ -220,7 +223,7 @@ const profileSlice = createSlice({
       .addCase(updateProfile.fulfilled, (state, action) => {
         state.editLoading = false;
         if (state.profile) {
-          state.profile.bio = action.payload.bio; // Update bio in profile
+          state.profile.bio = action.payload.bio;
         }
       })
       .addCase(updateProfile.rejected, (state, action) => {
@@ -234,7 +237,7 @@ const profileSlice = createSlice({
       .addCase(updateAvatar.fulfilled, (state, action) => {
         state.editLoading = false;
         if (state.profile) {
-          state.profile.avatar = action.payload.avatar; // Update avatar in profile
+          state.profile.avatar = action.payload.avatar;
         }
       })
       .addCase(updateAvatar.rejected, (state, action) => {
@@ -248,7 +251,7 @@ const profileSlice = createSlice({
       .addCase(resetAvatar.fulfilled, (state, action) => {
         state.editLoading = false;
         if (state.profile) {
-          state.profile.avatar = action.payload.avatar; // Reset avatar in profile
+          state.profile.avatar = action.payload.avatar;
         }
       })
       .addCase(resetAvatar.rejected, (state, action) => {

@@ -4,7 +4,7 @@ import {
   fetchUserPosts,
   followUser,
   unfollowUser,
-  searchUsers, // Imported thunk
+  searchUsers,
   clearError,
   clearUsers,
 } from "../app/slices/profileSlice";
@@ -54,7 +54,7 @@ const useProfile = () => {
 
   const handleSearchUsers = async (query, page = 1, pageSize = 10) => {
     try {
-      const result = await dispatch(searchUsers({ query, page, pageSize })); // Now correctly dispatches the imported thunk
+      const result = await dispatch(searchUsers({ query, page, pageSize }));
       if (searchUsers.fulfilled.match(result)) {
         return result.payload;
       }
@@ -73,7 +73,7 @@ const useProfile = () => {
         if (isViewedProfile) {
           await dispatch(fetchProfile(userId));
         }
-        return result.payload;
+        return result.payload; // Return updated user data
       }
       throw new Error(result.payload || "Failed to follow user");
     } catch (error) {
@@ -90,7 +90,7 @@ const useProfile = () => {
         if (isViewedProfile) {
           await dispatch(fetchProfile(userId));
         }
-        return result.payload;
+        return result.payload; // Return updated user data
       }
       throw new Error(result.payload || "Failed to unfollow user");
     } catch (error) {
@@ -110,7 +110,7 @@ const useProfile = () => {
     error,
     getUserProfile,
     getUserPosts,
-    searchUsers: handleSearchUsers, // Export the renamed function
+    searchUsers: handleSearchUsers,
     followUser: handleFollowUser,
     unfollowUser: handleUnfollowUser,
     clearError: () => dispatch(clearError()),
