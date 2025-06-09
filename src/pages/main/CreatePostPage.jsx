@@ -56,7 +56,7 @@ export default function CreatePostPage() {
         const newEditor = new Editor({
           element: editorRef.current,
           extensions: [StarterKit, Underline],
-          content: "<p>Start typing here...</p>",
+          content: "<p></p>",
           editorProps: {
             attributes: {
               class:
@@ -73,7 +73,6 @@ export default function CreatePostPage() {
 
     initializeEditor();
 
-    // Cleanup editor on unmount
     return () => {
       if (editor) {
         console.log("Destroying editor on cleanup");
@@ -85,9 +84,8 @@ export default function CreatePostPage() {
         editorRef.current.innerHTML = "";
       }
     };
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
-  // Log number of editors in DOM for debugging
   useEffect(() => {
     const checkEditors = () => {
       const editors = document.querySelectorAll(".tiptap");
