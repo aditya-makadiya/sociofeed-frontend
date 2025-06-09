@@ -1,6 +1,6 @@
 // components/profile/UserPosts.jsx
 import React, { useState, useEffect } from "react";
-import PostCard from "../post/PostCard";
+import PostCard from "../common/PostCard";
 import UserPostsSkeleton from "../skeletons/UserPostsSkeleton";
 import { Typography } from "@mui/material";
 

@@ -11,6 +11,7 @@ import {
   Button,
   Avatar,
   Box,
+  IconButton as MuiIconButton,
 } from "@mui/material";
 import {
   Favorite as FavoriteIcon,
@@ -18,6 +19,8 @@ import {
   Comment as CommentIcon,
   BookmarkBorder as SaveIcon,
   Bookmark as SavedIcon,
+  ArrowBackIos,
+  ArrowForwardIos,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
@@ -47,6 +50,7 @@ const PostCard = ({ post, onPostUpdate }) => {
   });
   const [commentDialogOpen, setCommentDialogOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // Track current image
 
   const {
     handleLikePost,
@@ -57,7 +61,7 @@ const PostCard = ({ post, onPostUpdate }) => {
     commentLoading,
   } = usePost();
 
-  // reset local state when props change
+  // Reset local state when props change
   useEffect(() => {
     setLocalState({
       isLiked: initLiked,
@@ -65,6 +69,7 @@ const PostCard = ({ post, onPostUpdate }) => {
       likeCount: Number(initLike),
       commentCount: Number(initComment),
     });
+    setCurrentImageIndex(0); // Reset image index when post changes
   }, [initLiked, initSaved, initLike, initComment]);
 
   const timeAgo = createdAt
@@ -73,8 +78,16 @@ const PostCard = ({ post, onPostUpdate }) => {
 
   const sanitized = DOMPurify.sanitize(content);
 
-  // -------- ACTION HANDLERS --------
+  // Image navigation handlers
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
 
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  // Action handlers (unchanged)
   const handleLikeToggle = async () => {
     const { isLiked, likeCount } = localState;
     const newLiked = !isLiked;
@@ -99,7 +112,6 @@ const PostCard = ({ post, onPostUpdate }) => {
       }
     } catch (err) {
       console.error(err);
-      // try to reconcile with server state
       try {
         const detail = await postService.getPostDetails(id);
         const srv = detail.data;
@@ -188,15 +200,79 @@ const PostCard = ({ post, onPostUpdate }) => {
           </Box>
         </Box>
 
-        {/* Image */}
+        {/* Image Carousel */}
         {images.length > 0 && (
-          <Box className="w-full h-64 overflow-hidden">
-            <img
-              src={images[0]}
-              alt="Post"
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
+          <Box className="w-full relative">
+            <Box
+              className="w-full"
+              sx={{
+                aspectRatio: "16/9", // Adjust aspect ratio as needed
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              <img
+                src={images[currentImageIndex]}
+                alt={`Post image ${currentImageIndex + 1}`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain", // Ensure full image is visible
+                  objectPosition: "center",
+                }}
+                loading="lazy"
+              />
+            </Box>
+            {images.length > 1 && (
+              <>
+                {/* Previous Button */}
+                <MuiIconButton
+                  onClick={handlePrevImage}
+                  sx={{
+                    position: "absolute",
+                    top: "50%",
+                    left: 8,
+                    transform: "translateY(-50%)",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    color: "white",
+                    "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.7)" },
+                  }}
+                >
+                  <ArrowBackIos fontSize="small" />
+                </MuiIconButton>
+                {/* Next Button */}
+                <MuiIconButton
+                  onClick={handleNextImage}
+                  sx={{
+                    position: "absolute",
+                    top: "50%",
+                    right: 8,
+                    transform: "translateY(-50%)",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    color: "white",
+                    "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.7)" },
+                  }}
+                >
+                  <ArrowForwardIos fontSize="small" />
+                </MuiIconButton>
+                {/* Image Counter */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: 8,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    color: "white",
+                    padding: "2px 8px",
+                    borderRadius: "12px",
+                    fontSize: "0.75rem",
+                  }}
+                >
+                  {currentImageIndex + 1} / {images.length}
+                </Box>
+              </>
+            )}
           </Box>
         )}
 

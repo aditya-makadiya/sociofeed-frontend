@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import PostCard from "../post/PostCard";
+import PostCard from "../common/PostCard";
 import { useFeed } from "../../hooks/useFeed";
 import PostCardSkeleton from "../skeletons/PostCardSkeleton";
 import { useInView } from "react-intersection-observer";
