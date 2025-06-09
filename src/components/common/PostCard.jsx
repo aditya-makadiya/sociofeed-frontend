@@ -28,8 +28,10 @@ import DOMPurify from "dompurify";
 import usePost from "../../hooks/usePost";
 import { showErrorToast } from "../notifications/toastUtils";
 import postService from "../../services/postService";
+import { useNavigate } from "react-router-dom";
 
 const PostCard = ({ post, onPostUpdate }) => {
+  const navigate = useNavigate();
   const {
     id,
     content = "",
@@ -319,7 +321,7 @@ const PostCard = ({ post, onPostUpdate }) => {
               <Tooltip title="Add comment">
                 <IconButton
                   size="small"
-                  onClick={() => setCommentDialogOpen(true)}
+                  onClick={() => navigate(`/post/${post.id}`)}
                 >
                   <CommentIcon fontSize="small" />
                 </IconButton>

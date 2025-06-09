@@ -61,6 +61,8 @@ const postService = {
     const response = await apiClient.get(
       `/posts/${postId}/comments?page=${page}&limit=${limit}`,
     );
+    console.log("response From service: ", response);
+
     return response;
   },
 

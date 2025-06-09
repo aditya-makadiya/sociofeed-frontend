@@ -142,8 +142,8 @@ export const getComments = createAsyncThunk(
       const response = await postService.getPostComments(postId, page, limit);
       return {
         postId,
-        comments: response.data.data.comments,
-        total: response.data.data.total,
+        comments: response.data.comments,
+        total: response.data.total,
       };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to fetch comments";
