@@ -1,4 +1,3 @@
-// pages/post/PostDetailPage.jsx
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
@@ -6,16 +5,19 @@ import PostCard from "../../components/common/PostCard";
 import usePost from "../../hooks/usePost";
 import usePostActions from "../../hooks/usePostActions";
 import postService from "../../services/postService";
-import CommentsSection from "../../components/comment/CommentSection";
-import { toast } from "react-toastify"; // Import toast
+import CommentsSection from "../../components/comment/CommentsSection";
+import { toast } from "react-toastify";
 
 const PostDetailPage = () => {
   const { postId } = useParams();
   const {
     handleGetComments,
     comments,
-    loading: commentsLoading,
+    commentLoading,
     handleAddComment,
+    handleUpdateComment,
+    handleDeleteComment,
+    currentUser,
   } = usePost();
   const { handleToggleLike, handleToggleSave } = usePostActions();
   const [post, setPost] = useState(null);
@@ -36,27 +38,6 @@ const PostDetailPage = () => {
     fetchPostDetails();
   }, [postId]);
 
-  // const onAddComment = async (postId, content) => {
-  //   try {
-  //     const result = await handleAddComment(postId, content);
-  //     if (result) {
-  //       // Refresh comments after successful addition
-  //       await handleGetComments(postId);
-  //       // Optionally update post’s commentCount here if you track it
-  //       if (post) {
-  //         setPost((prev) => ({
-  //           ...prev,
-  //           commentCount: prev.commentCount + 1,
-  //         }));
-  //       }
-  //       toast.success("Comment added successfully!"); // Show success toast
-  //     }
-  //   } catch (error) {
-  //     console.error("Error adding comment:", error);
-  //     toast.error("Failed to add comment. Please try again."); // Show error toast
-  //   }
-  // };
-
   const onAddComment = async (postId, content) => {
     try {
       const result = await handleAddComment(postId, content);
@@ -73,6 +54,38 @@ const PostDetailPage = () => {
     } catch (error) {
       console.error("onAddComment error:", error);
       toast.error("Failed to add comment. Please try again.");
+    }
+  };
+
+  const onUpdateComment = async (postId, commentId, content) => {
+    try {
+      const result = await handleUpdateComment(postId, commentId, content);
+      if (result) {
+        await handleGetComments(postId); // Refresh comments
+        // toast.success("Comment updated successfully!");
+      }
+    } catch (error) {
+      console.error("onUpdateComment error:", error);
+      toast.error("Failed to update comment. Please try again.");
+    }
+  };
+
+  const onDeleteComment = async (postId, commentId) => {
+    try {
+      const result = await handleDeleteComment(postId, commentId);
+      if (result) {
+        await handleGetComments(postId); // Refresh comments
+        if (post) {
+          setPost((prev) => ({
+            ...prev,
+            commentCount: (prev.commentCount || 1) - 1,
+          }));
+        }
+        // toast.success("Comment deleted successfully!");
+      }
+    } catch (error) {
+      console.error("onDeleteComment error:", error);
+      toast.error("Failed to delete comment. Please try again.");
     }
   };
 
@@ -149,8 +162,11 @@ const PostDetailPage = () => {
         <CommentsSection
           comments={comments}
           postId={postId}
-          onAddComment={onAddComment} // Pass the working handler here
-          commentLoading={commentsLoading}
+          onAddComment={onAddComment}
+          onUpdateComment={onUpdateComment}
+          onDeleteComment={onDeleteComment}
+          commentLoading={commentLoading}
+          currentUserId={currentUser?.id}
         />
       </Box>
     </Box>

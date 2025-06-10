@@ -1,24 +1,29 @@
-// components/comments/CommentsList.jsx
 import React from "react";
-import Box from "@mui/material/Box";
 import CommentItem from "./CommentItem";
+import { styled } from "@mui/material";
 
-const CommentsList = ({ comments }) => {
+const StyledDiv = styled("div")({});
+
+const CommentsList = ({
+  comments,
+  currentUserId,
+  onUpdateComment,
+  onDeleteComment,
+  postId,
+}) => {
   return (
-    <Box
-      sx={{
-        maxWidth: 800,
-        mx: "auto",
-        width: "100%",
-        pt: 4,
-        pb: 8,
-        px: 2,
-      }}
-    >
+    <StyledDiv>
       {comments.map((comment) => (
-        <CommentItem key={comment.id} comment={comment} />
+        <CommentItem
+          key={comment.id}
+          comment={comment}
+          currentUserId={currentUserId}
+          onUpdateComment={onUpdateComment}
+          onDeleteComment={onDeleteComment}
+          postId={postId}
+        />
       ))}
-    </Box>
+    </StyledDiv>
   );
 };
 

@@ -57,6 +57,20 @@ const postService = {
     return response;
   },
 
+  updateComment: async (postId, commentId, content) => {
+    const response = await apiClient.put(`/posts/comments/${commentId}`, {
+      content,
+    });
+    console.log("updateComment response:", JSON.stringify(response, null, 2));
+    return response;
+  },
+
+  deleteComment: async (postId, commentId) => {
+    const response = await apiClient.delete(`/posts/comments/${commentId}`);
+    console.log("deleteComment response:", JSON.stringify(response, null, 2));
+    return response;
+  },
+
   // Get post comments
   getPostComments: async (postId, page = 1, limit = 10) => {
     const response = await apiClient.get(

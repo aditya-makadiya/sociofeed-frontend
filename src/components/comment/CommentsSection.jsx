@@ -1,14 +1,17 @@
-// components/comment/CommentsSection.jsx
 import React from "react";
 import { Box, Typography, Paper } from "@mui/material";
 import CommentForm from "./CommentForm";
 import CommentsList from "./CommentsList";
+// import ErrorBoundary from "../common/ErrorBoundary";
 
 const CommentsSection = ({
   comments,
   postId,
   onAddComment,
+  onUpdateComment,
+  onDeleteComment,
   commentLoading,
+  currentUserId,
 }) => {
   return (
     <Box
@@ -53,7 +56,15 @@ const CommentsSection = ({
         >
           Comments ({comments.length})
         </Typography>
-        <CommentsList comments={comments} />
+        {/* <ErrorBoundary> */}
+        <CommentsList
+          comments={comments}
+          currentUserId={currentUserId}
+          onUpdateComment={onUpdateComment}
+          onDeleteComment={onDeleteComment}
+          postId={postId}
+        />
+        {/* </ErrorBoundary> */}
       </Box>
     </Box>
   );

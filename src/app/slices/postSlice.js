@@ -129,12 +129,47 @@ export const addComment = createAsyncThunk(
       );
       return {
         postId,
-        comment: response.data.comment, // Correctly extract comment
+        comment: response.data.comment,
         commentCount: null,
       };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to add comment";
       console.error("addComment error:", msg, error);
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+export const updateComment = createAsyncThunk(
+  "post/updateComment",
+  async ({ postId, commentId, content }, { rejectWithValue }) => {
+    try {
+      const response = await postService.updateComment(
+        postId,
+        commentId,
+        content,
+      );
+      return {
+        commentId,
+        comment: response.data.comment,
+      };
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to update comment";
+      console.error("updateComment error:", msg, error);
+      return rejectWithValue(msg);
+    }
+  },
+);
+
+export const deleteComment = createAsyncThunk(
+  "post/deleteComment",
+  async ({ postId, commentId }, { rejectWithValue }) => {
+    try {
+      await postService.deleteComment(postId, commentId);
+      return { postId, commentId };
+    } catch (error) {
+      const msg = error.response?.data?.message || "Failed to delete comment";
+      console.error("deleteComment error:", msg, error);
       return rejectWithValue(msg);
     }
   },
@@ -273,6 +308,42 @@ const postSlice = createSlice({
         state.comments.unshift(comment);
       })
       .addCase(addComment.rejected, (state, action) => {
+        state.commentLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(updateComment.pending, (state) => {
+        state.commentLoading = true;
+        state.error = null;
+      })
+      .addCase(updateComment.fulfilled, (state, action) => {
+        const { commentId, comment } = action.payload;
+        state.commentLoading = false;
+        const commentIndex = state.comments.findIndex(
+          (c) => c.id === commentId,
+        );
+        if (commentIndex !== -1) {
+          state.comments[commentIndex] = comment;
+        }
+      })
+      .addCase(updateComment.rejected, (state, action) => {
+        state.commentLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteComment.pending, (state) => {
+        state.commentLoading = true;
+        state.error = null;
+      })
+      .addCase(deleteComment.fulfilled, (state, action) => {
+        const { postId, commentId } = action.payload;
+        state.commentLoading = false;
+        state.comments = state.comments.filter((c) => c.id !== commentId);
+        const postIndex = state.posts.findIndex((post) => post.id === postId);
+        if (postIndex !== -1) {
+          state.posts[postIndex].commentCount =
+            (state.posts[postIndex].commentCount || 1) - 1;
+        }
+      })
+      .addCase(deleteComment.rejected, (state, action) => {
         state.commentLoading = false;
         state.error = action.payload;
       })
