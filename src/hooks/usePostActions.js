@@ -16,12 +16,14 @@ const usePostActions = () => {
       const response = isCurrentlyLiked
         ? await postService.unlikePost(postId)
         : await postService.likePost(postId);
+
       showSuccessToast(isCurrentlyLiked ? "Post unliked!" : "Post liked!");
-      return response.data.likesCount; // Return updated like count
+
+      return response.data.likesCount || response.data.likeCount;
     } catch (error) {
       showErrorToast("Failed to toggle like");
       console.error("Toggle like error:", error);
-      return null;
+      throw error; // Re-throw to handle in component
     } finally {
       setLikeLoading((prev) => ({ ...prev, [postId]: false }));
     }
@@ -33,12 +35,13 @@ const usePostActions = () => {
       const response = isCurrentlySaved
         ? await postService.unsavePost(postId)
         : await postService.savePost(postId);
+
       showSuccessToast(isCurrentlySaved ? "Post unsaved!" : "Post saved!");
-      return response; // Return response if needed
+      return response;
     } catch (error) {
       showErrorToast("Failed to toggle save");
       console.error("Toggle save error:", error);
-      return null;
+      throw error; // Re-throw to handle in component
     } finally {
       setSaveLoading((prev) => ({ ...prev, [postId]: false }));
     }

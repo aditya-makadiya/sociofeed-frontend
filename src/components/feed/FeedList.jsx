@@ -8,8 +8,8 @@ import { Typography } from "@mui/material";
 const FeedList = () => {
   const { posts, loading, loadMorePosts, hasMore } = useFeed();
   const { ref, inView } = useInView({
-    threshold: 0, // Trigger when the element is in view
-    skip: !hasMore || loading, // Skip observer if no more posts or loading
+    threshold: 0,
+    skip: !hasMore || loading,
   });
 
   useEffect(() => {
