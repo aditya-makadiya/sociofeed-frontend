@@ -20,7 +20,7 @@ export const login = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await authService.loginUser(data);
-      return response.data.user; // { id, username, email }
+      return response.data.user;
     } catch (error) {
       console.log(error);
 
@@ -35,7 +35,7 @@ export const activate = createAsyncThunk(
   async (token, { rejectWithValue }) => {
     try {
       const response = await authService.activateAccount(token);
-      return response.data.user; // { id, username, email }
+      return response.data.user;
     } catch (error) {
       const msg = error.response?.data?.message || "Activation failed";
       return rejectWithValue(msg);
@@ -61,7 +61,7 @@ export const resetPassword = createAsyncThunk(
   async ({ token, data }, { rejectWithValue }) => {
     try {
       await authService.resetPassword(token, data);
-      return; // No data returned
+      return;
     } catch (error) {
       const msg = error.response?.data?.message || "Password reset failed";
       return rejectWithValue(msg);

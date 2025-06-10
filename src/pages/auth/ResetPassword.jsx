@@ -30,61 +30,62 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-red-500 to-orange-600 px-6">
+    <Box className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 px-6">
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 100 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <Paper
           elevation={3}
-          className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-8"
+          className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 sm:p-8"
         >
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
             className="flex flex-col items-center"
           >
             <Typography
               variant="h5"
-              className="font-extrabold text-gray-900 mb-4 tracking-tight"
+              className="font-bold text-gray-900 mb-4 tracking-tight"
             >
               Reset Password
             </Typography>
             {isDone ? (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
                 className="flex flex-col items-center w-full"
               >
                 <Typography className="mb-6 text-green-600 text-sm text-center font-medium">
                   Password reset successful! Redirecting to login...
                 </Typography>
-                <motion.div whileHover={{ scale: 1.05 }}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={() => navigate("/login")}
-                    className="py-3 rounded-full text-sm font-medium tracking-wide"
-                    sx={{
-                      backgroundColor: "#2563eb",
-                      "&:hover": { backgroundColor: "#1d4ed8" },
-                      textTransform: "none",
-                    }}
-                  >
-                    Go to Login
-                  </Button>
-                </motion.div>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={() => navigate("/login")}
+                  className="py-3 rounded-lg text-sm font-medium"
+                  sx={{
+                    backgroundColor: "#1e40af",
+                    "&:hover": { backgroundColor: "#1d4ed8" },
+                    textTransform: "none",
+                  }}
+                >
+                  Go to Login
+                </Button>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="w-full">
                 {error && (
-                  <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg flex justify-between items-center w-full">
-                    <span>{error}</span>
-                    <button onClick={clearError} className="text-red-700">
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg flex justify-between items-center w-full">
+                    <span className="text-sm">{error}</span>
+                    <button
+                      onClick={clearError}
+                      className="text-red-700 hover:text-red-900"
+                    >
                       ✕
                     </button>
                   </div>
@@ -102,9 +103,18 @@ const ResetPasswordPage = () => {
                   margin="normal"
                   variant="outlined"
                   size="small"
-                  className="rounded-lg"
-                  InputProps={{
-                    className: "border rounded-lg px-4 py-2 text-sm bg-gray-50",
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "#1e40af",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#1e40af",
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#1e40af",
+                    },
                   }}
                 />
                 <TextField
@@ -117,28 +127,35 @@ const ResetPasswordPage = () => {
                   margin="normal"
                   variant="outlined"
                   size="small"
-                  className="rounded-lg"
-                  InputProps={{
-                    className: "border rounded-lg px-4 py-2 text-sm bg-gray-50",
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "#1e40af",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "#1e40af",
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#1e40af",
+                    },
                   }}
                 />
-                <motion.div whileHover={{ scale: 1.05 }}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    disabled={loading}
-                    className="py-3 rounded-full text-sm font-medium tracking-wide mt-4"
-                    sx={{
-                      backgroundColor: "#2563eb",
-                      "&:hover": { backgroundColor: "#1d4ed8" },
-                      textTransform: "none",
-                    }}
-                  >
-                    {loading ? "Resetting..." : "Reset Password"}
-                  </Button>
-                </motion.div>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  disabled={loading}
+                  className="py-3 rounded-lg text-sm font-medium mt-4"
+                  sx={{
+                    backgroundColor: "#1e40af",
+                    "&:hover": { backgroundColor: "#1d4ed8" },
+                    textTransform: "none",
+                  }}
+                >
+                  {loading ? "Resetting..." : "Reset Password"}
+                </Button>
               </form>
             )}
           </motion.div>

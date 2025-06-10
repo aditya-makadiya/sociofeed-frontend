@@ -38,7 +38,6 @@ const useAuth = () => {
         showSuccessToast(
           "Registration successful! Please check your email to activate your account.",
         );
-        // navigate('/login');
       }
       return result;
     } catch (error) {

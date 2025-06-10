@@ -21,7 +21,6 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Request Interceptor (optional - add token if needed)
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -35,7 +34,6 @@ apiClient.interceptors.request.use(
   },
 );
 
-// Response Interceptor
 apiClient.interceptors.response.use(
   (response) => response.data,
   async (error) => {
