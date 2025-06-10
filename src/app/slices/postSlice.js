@@ -123,13 +123,18 @@ export const addComment = createAsyncThunk(
   async ({ postId, content }, { rejectWithValue }) => {
     try {
       const response = await postService.addComment(postId, content);
+      console.log(
+        "addComment thunk response:",
+        JSON.stringify(response, null, 2),
+      );
       return {
         postId,
-        comment: response.data.data,
-        commentCount: response.data.data.commentCount || 0,
+        comment: response.data.comment, // Correctly extract comment
+        commentCount: null,
       };
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to add comment";
+      console.error("addComment error:", msg, error);
       return rejectWithValue(msg);
     }
   },
@@ -258,11 +263,12 @@ const postSlice = createSlice({
         state.error = null;
       })
       .addCase(addComment.fulfilled, (state, action) => {
-        const { postId, comment, commentCount } = action.payload;
+        const { postId, comment } = action.payload;
         state.commentLoading = false;
         const postIndex = state.posts.findIndex((post) => post.id === postId);
         if (postIndex !== -1) {
-          state.posts[postIndex].commentCount = commentCount;
+          state.posts[postIndex].commentCount =
+            (state.posts[postIndex].commentCount || 0) + 1;
         }
         state.comments.unshift(comment);
       })

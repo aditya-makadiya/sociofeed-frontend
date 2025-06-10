@@ -82,6 +82,7 @@ const usePost = () => {
       }
       throw new Error(result.payload || "Failed to add comment");
     } catch (error) {
+      console.error("handleAddComment error:", error);
       showErrorToast(error.message || "Failed to add comment");
       return null;
     }

@@ -36,24 +36,43 @@ const PostDetailPage = () => {
     fetchPostDetails();
   }, [postId]);
 
+  // const onAddComment = async (postId, content) => {
+  //   try {
+  //     const result = await handleAddComment(postId, content);
+  //     if (result) {
+  //       // Refresh comments after successful addition
+  //       await handleGetComments(postId);
+  //       // Optionally update post’s commentCount here if you track it
+  //       if (post) {
+  //         setPost((prev) => ({
+  //           ...prev,
+  //           commentCount: prev.commentCount + 1,
+  //         }));
+  //       }
+  //       toast.success("Comment added successfully!"); // Show success toast
+  //     }
+  //   } catch (error) {
+  //     console.error("Error adding comment:", error);
+  //     toast.error("Failed to add comment. Please try again."); // Show error toast
+  //   }
+  // };
+
   const onAddComment = async (postId, content) => {
     try {
       const result = await handleAddComment(postId, content);
       if (result) {
-        // Refresh comments after successful addition
         await handleGetComments(postId);
-        // Optionally update post’s commentCount here if you track it
         if (post) {
           setPost((prev) => ({
             ...prev,
-            commentCount: prev.commentCount + 1,
+            commentCount: (prev.commentCount || 0) + 1,
           }));
         }
-        toast.success("Comment added successfully!"); // Show success toast
+        // toast.success("Comment added successfully!");
       }
     } catch (error) {
-      console.error("Error adding comment:", error);
-      toast.error("Failed to add comment. Please try again."); // Show error toast
+      console.error("onAddComment error:", error);
+      toast.error("Failed to add comment. Please try again.");
     }
   };
 

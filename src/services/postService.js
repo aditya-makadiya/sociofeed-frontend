@@ -53,6 +53,7 @@ const postService = {
     const response = await apiClient.post(`/posts/${postId}/comments`, {
       content,
     });
+    console.log("addComment response:", JSON.stringify(response, null, 2));
     return response;
   },
 
