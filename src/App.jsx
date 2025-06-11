@@ -13,6 +13,7 @@ import CreatePostPage from "./pages/main/CreatePostPage";
 import ProtectedRoute from "./components/ProtectedRoutes";
 import { Route, Routes } from "react-router-dom";
 import PostDetailPage from "./pages/post/PostDetailPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/create-post" element={<CreatePostPage />} />
           <Route path="/post/:postId" element={<PostDetailPage />} />
         </Route>
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </>
   );

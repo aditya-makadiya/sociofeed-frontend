@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
 import PostCard from "../../components/common/PostCard";
 import usePost from "../../hooks/usePost";
@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 
 const PostDetailPage = () => {
   const { postId } = useParams();
+  const navigate = useNavigate();
   const {
     handleGetComments,
     comments,
@@ -23,7 +24,20 @@ const PostDetailPage = () => {
   const [post, setPost] = useState(null);
   const [error, setError] = useState(null);
 
+  const isValidUUID = (id) => {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
+  };
+
   useEffect(() => {
+    if (!postId || !isValidUUID(postId)) {
+      console.error("Invalid post ID format:", postId);
+      toast.error("Invalid post ID.");
+      navigate("/404", { state: { message: "Invalid post ID format." } });
+      return;
+    }
+
     const fetchPostDetails = async () => {
       try {
         const response = await postService.getPostDetails(postId);

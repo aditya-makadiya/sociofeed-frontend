@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import useProfile from "../../hooks/useProfile";
 import { motion } from "framer-motion";
 import ProfileHeader from "../../components/profile/ProfileHeader";
 import UserPosts from "../../components/profile/UserPosts";
 import { CircularProgress, Typography, Box } from "@mui/material";
+import { showSuccessToast, showErrorToast } from "../../components/notifications/toastUtils"; // Import your toast utility
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -19,18 +20,36 @@ const ProfilePage = () => {
     getUserPosts,
   } = useProfile();
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  const isValidUUID = (id) => {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(id);
+  };
 
   useEffect(() => {
+    if (id && !isValidUUID(id)) {
+      console.error("Invalid user ID format:", id);
+      showErrorToast("Invalid profile ID", "error");
+      navigate("/404", {
+        state: { message: "Invalid profile ID format." },
+      });
+      return; // Important: Return early to prevent further execution
+    }
+
     if (!id && !user?.id) return;
+
     const profileId = id || user.id;
     console.log("Fetching profile for ID:", profileId);
+
     Promise.all([
       getUserProfile(profileId),
       getUserPosts(profileId, 1, 10),
     ]).catch((error) => {
       console.error("Error fetching profile data:", error);
     });
-  }, [id, user?.id]); 
+  }, [id, user?.id]);
 
   if (!user) {
     return (
