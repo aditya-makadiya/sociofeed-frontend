@@ -1,7 +1,7 @@
-import React from "react";
+import React, { memo } from "react";
 import { Button } from "@mui/material";
 
-const ProfileActions = React.memo(
+const ProfileActions = memo(
   ({
     isOwnProfile,
     isFollowing,

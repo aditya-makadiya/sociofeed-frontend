@@ -1,7 +1,7 @@
-import React from "react";
+import React, { memo } from "react";
 import { TextField, Box } from "@mui/material";
 
-const ProfileForm = React.memo(
+const ProfileForm = memo(
   ({ username, bio, onUsernameChange, onBioChange, loading }) => (
     <>
       <Box mb={3}>

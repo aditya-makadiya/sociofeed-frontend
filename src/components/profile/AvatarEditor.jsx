@@ -1,11 +1,11 @@
-import React from "react";
+import React, { memo } from "react";
 import { Avatar, Button, Typography, Box } from "@mui/material";
 import {
   PhotoCamera as PhotoCameraIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 
-const AvatarEditor = React.memo(
+const AvatarEditor = memo(
   ({
     avatarPreview,
     onAvatarChange,

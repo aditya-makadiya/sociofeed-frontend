@@ -1,27 +1,24 @@
-// components/PostCard/PostContent.js
 import React from "react";
 import { Box } from "@mui/material";
 import DOMPurify from "dompurify";
+import "../../post/EditorComponent.css"; // Adjust path based on project structure
 
 const PostContent = ({ content }) => {
   if (!content) return null;
 
-  const sanitized = DOMPurify.sanitize(content);
+  // Configure DOMPurify to allow class attributes
+  const sanitized = DOMPurify.sanitize(content, {
+    ADD_ATTR: ["class"],
+  });
 
   return (
     <Box className="px-4 pb-2">
       <div
-        className="prose prose-sm text-gray-800 mb-4 line-clamp-3"
+        className="prose prose-sm text-gray-600 custom-editor mb-4"
         dangerouslySetInnerHTML={{ __html: sanitized }}
-        style={{
-          display: "-webkit-box",
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}
       />
     </Box>
   );
 };
 
-export default PostContent;
+export default React.memo(PostContent);

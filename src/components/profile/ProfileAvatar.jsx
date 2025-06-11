@@ -1,7 +1,7 @@
-import React from "react";
+import React, { memo } from "react";
 import { Person as PersonIcon } from "@mui/icons-material";
 
-const ProfileAvatar = React.memo(({ avatar, username }) => (
+const ProfileAvatar = memo(({ avatar, username }) => (
   <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden flex-shrink-0">
     {avatar ? (
       <img

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { memo } from "react";
 
-const ProfileStats = React.memo(
+const ProfileStats = memo(
   ({ followerCount, followingCount, onOpenFollowers, onOpenFollowing }) => (
     <div className="flex space-x-4 sm:space-x-8 mt-2 sm:mt-3 ml-2 sm:ml-6">
       <div className="text-left">
