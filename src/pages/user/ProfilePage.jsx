@@ -30,7 +30,7 @@ const ProfilePage = () => {
     ]).catch((error) => {
       console.error("Error fetching profile data:", error);
     });
-  }, [id, user?.id]); // included user.id in dependency array
+  }, [id, user?.id]); 
 
   if (!user) {
     return (

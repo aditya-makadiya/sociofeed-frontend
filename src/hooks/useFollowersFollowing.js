@@ -19,23 +19,13 @@ const useFollowersFollowing = () => {
       setLoading(true);
       setError(null);
 
-      console.log(
-        "Fetching followers for userId:",
-        userId,
-        "page:",
-        page,
-        "pageSize:",
-        pageSize,
-      );
-
       const response = await apiClient.get(`/users/${userId}/followers`, {
         params: { page, pageSize },
       });
 
-      console.log("Full followers response:", response);
-      console.log("Followers response data:", response.data);
+      // console.log("Full followers response:", response);
+      // console.log("Followers response data:", response.data);
 
-      // Handle the actual response structure from your API
       let responseData;
 
       if (
@@ -57,10 +47,6 @@ const useFollowersFollowing = () => {
         console.error("Unexpected response structure:", response.data);
         throw new Error("Unexpected response structure");
       }
-
-      console.log("Processed followers data:", responseData);
-      console.log("Followers users:", responseData.users);
-      console.log("Followers total:", responseData.total);
 
       setData(responseData.users || []);
       setPagination({
@@ -109,10 +95,7 @@ const useFollowersFollowing = () => {
           params: { page, pageSize },
         });
 
-        console.log("Full following response:", response);
-        console.log("Following response data:", response.data);
 
-        // Handle the actual response structure from your API
         let responseData;
 
         if (
@@ -135,9 +118,6 @@ const useFollowersFollowing = () => {
           throw new Error("Unexpected response structure");
         }
 
-        console.log("Processed following data:", responseData);
-        console.log("Following users:", responseData.users);
-        console.log("Following total:", responseData.total);
 
         setData(responseData.users || []);
         setPagination({
@@ -180,7 +160,6 @@ const useFollowersFollowing = () => {
     });
   }, []);
 
-  // New method to update isFollowing status for a specific user
   const updateUserFollowingStatus = useCallback((userId, isFollowing) => {
     setData((prevData) =>
       prevData.map((user) =>
@@ -197,7 +176,7 @@ const useFollowersFollowing = () => {
     fetchFollowers,
     fetchFollowing,
     clearData,
-    updateUserFollowingStatus, // Expose method to update UI
+    updateUserFollowingStatus, 
   };
 };
 

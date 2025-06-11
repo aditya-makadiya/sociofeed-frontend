@@ -23,7 +23,7 @@ const usePostActions = () => {
     } catch (error) {
       showErrorToast("Failed to toggle like");
       console.error("Toggle like error:", error);
-      throw error; // Re-throw to handle in component
+      throw error;
     } finally {
       setLikeLoading((prev) => ({ ...prev, [postId]: false }));
     }
@@ -41,7 +41,7 @@ const usePostActions = () => {
     } catch (error) {
       showErrorToast("Failed to toggle save");
       console.error("Toggle save error:", error);
-      throw error; // Re-throw to handle in component
+      throw error; 
     } finally {
       setSaveLoading((prev) => ({ ...prev, [postId]: false }));
     }
