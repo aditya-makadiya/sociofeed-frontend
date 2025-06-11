@@ -64,7 +64,7 @@ const EditorComponent = ({ initialContent, onChange }) => {
       ],
       content: initialContent || "<p></p>",
       onUpdate: ({ editor }) => {
-        console.log("Editor content:", editor.getHTML());
+        // console.log("Editor content:", editor.getHTML());
         onChange(editor.getHTML());
       },
       editorProps: {
@@ -105,7 +105,7 @@ const EditorComponent = ({ initialContent, onChange }) => {
           <button
             type="button"
             onClick={() => {
-              console.log("Underline button clicked");
+              // console.log("Underline button clicked");
               editor.chain().focus().toggleUnderline().run();
             }}
             className={buttonClass(editor.isActive("underline"))}
@@ -116,7 +116,7 @@ const EditorComponent = ({ initialContent, onChange }) => {
           <button
             type="button"
             onClick={() => {
-              console.log("Bullet List button clicked");
+              // console.log("Bullet List button clicked");
               editor.chain().focus().toggleBulletList().run();
             }}
             className={buttonClass(editor.isActive("bulletList"))}
@@ -127,7 +127,7 @@ const EditorComponent = ({ initialContent, onChange }) => {
           <button
             type="button"
             onClick={() => {
-              console.log("Ordered List button clicked");
+              // console.log("Ordered List button clicked");
               editor.chain().focus().toggleOrderedList().run();
             }}
             className={buttonClass(editor.isActive("orderedList"))}
@@ -138,10 +138,10 @@ const EditorComponent = ({ initialContent, onChange }) => {
           <button
             type="button"
             onClick={() => {
-              console.log(
-                "Heading 1 button clicked, can toggle:",
-                editor.can().toggleHeading({ level: 1 })
-              );
+              // console.log(
+              //   "Heading 1 button clicked, can toggle:",
+              //   editor.can().toggleHeading({ level: 1 })
+              // );
               editor
                 .chain()
                 .focus()
@@ -158,10 +158,10 @@ const EditorComponent = ({ initialContent, onChange }) => {
           <button
             type="button"
             onClick={() => {
-              console.log(
-                "Heading 2 button clicked, can toggle:",
-                editor.can().toggleHeading({ level: 2 })
-              );
+              // console.log(
+              //   "Heading 2 button clicked, can toggle:",
+              //   editor.can().toggleHeading({ level: 2 })
+              // );
               editor
                 .chain()
                 .focus()
@@ -178,10 +178,10 @@ const EditorComponent = ({ initialContent, onChange }) => {
           <button
             type="button"
             onClick={() => {
-              console.log(
-                "Blockquote button clicked, can toggle:",
-                editor.can().toggleBlockquote()
-              );
+              // console.log(
+              //   "Blockquote button clicked, can toggle:",
+              //   editor.can().toggleBlockquote()
+              // );
               editor.chain().focus().setParagraph().toggleBlockquote().run();
             }}
             className={buttonClass(editor.isActive("blockquote"))}

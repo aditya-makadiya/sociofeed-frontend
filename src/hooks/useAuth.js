@@ -53,12 +53,12 @@ const useAuth = () => {
         password: data.password,
       };
       const result = await dispatch(login(loginData));
-      console.log(user);
+      // console.log(user);
 
       if (login.fulfilled.match(result)) {
         showSuccessToast("Login successful!");
         navigate("/");
-        console.log(result);
+        // console.log(result);
       }
       return result;
     } catch (error) {

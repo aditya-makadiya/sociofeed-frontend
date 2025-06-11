@@ -82,14 +82,14 @@ const useFollowersFollowing = () => {
         setLoading(true);
         setError(null);
 
-        console.log(
-          "Fetching following for userId:",
-          userId,
-          "page:",
-          page,
-          "pageSize:",
-          pageSize,
-        );
+        // console.log(
+        //   "Fetching following for userId:",
+        //   userId,
+        //   "page:",
+        //   page,
+        //   "pageSize:",
+        //   pageSize,
+        // );
 
         const response = await apiClient.get(`/users/${userId}/following`, {
           params: { page, pageSize },

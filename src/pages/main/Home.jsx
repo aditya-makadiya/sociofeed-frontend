@@ -1,5 +1,4 @@
-// pages/Home.jsx
-// import CreatePost from "../../components/feed/CreatePost";
+
 import FeedList from "../../components/feed/FeedList";
 
 export default function Home() {

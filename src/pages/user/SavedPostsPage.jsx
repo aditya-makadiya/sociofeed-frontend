@@ -18,25 +18,20 @@ const SavedPostsPage = () => {
     skip: !hasMore || loading,
   });
 
-  // Sync local posts with hook posts, ensuring isSaved: true
   useEffect(() => {
     setPosts(initialPosts.map((post) => ({ ...post, isSaved: true })));
   }, [initialPosts]);
 
-  // Handle infinite scroll
   useEffect(() => {
     if (inView && hasMore && !loading) {
       loadMorePosts();
     }
   }, [inView, hasMore, loading, loadMorePosts]);
 
-  // Handle post updates (e.g., unsave)
   const handlePostUpdate = (postId, updatedData) => {
     if (updatedData.isSaved === false) {
-      // Remove unsaved post
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
     } else {
-      // Update post's isSaved status
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
           post.id === postId ? { ...post, isSaved: updatedData.isSaved } : post,

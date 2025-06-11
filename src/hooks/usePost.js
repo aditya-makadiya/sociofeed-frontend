@@ -33,13 +33,13 @@ const usePost = () => {
       const result = await dispatch(
         toggleLikePost({ postId, isCurrentlyLiked }),
       );
-      console.log("handleLikePost result:", {
-        type: result.type,
-        payload: result.payload,
-      });
+      // console.log("handleLikePost result:", {
+      //   type: result.type,
+      //   payload: result.payload,
+      // });
       if (toggleLikePost.fulfilled.match(result)) {
         const { isLiked, likeCount } = result.payload;
-        console.log("handleLikePost success:", { isLiked, likeCount });
+        // console.log("handleLikePost success:", { isLiked, likeCount });
         showSuccessToast(isLiked ? "Post liked!" : "Post unliked!");
         return {
           isLiked,

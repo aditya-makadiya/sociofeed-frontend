@@ -1,4 +1,4 @@
-// services/postService.js
+
 import apiClient from "../utils/apiClient";
 
 const postService = {
@@ -6,13 +6,13 @@ const postService = {
   likePost: async (postId) => {
     try {
       const response = await apiClient.post(`/posts/${postId}/like`);
-      console.log("likePost response:", JSON.stringify(response, null, 2)); // Log full response
+      // console.log("likePost response:", JSON.stringify(response, null, 2)); // Log full response
       if (!response?.data?.likesCount && response.data?.likesCount !== 0) {
         throw new Error(
           `Invalid likesCount in response: ${JSON.stringify(response)}`,
         );
       }
-      console.log("likePost returning:", response.data.likesCount); // Log return value
+      // console.log("likePost returning:", response.data.likesCount); // Log return value
       return response;
     } catch (error) {
       console.error("likePost error:", error.message, error.response?.data);
@@ -23,13 +23,13 @@ const postService = {
   unlikePost: async (postId) => {
     try {
       const response = await apiClient.delete(`/posts/${postId}/unlike`);
-      console.log("unlikePost response:", JSON.stringify(response, null, 2)); // Log full response
+      // console.log("unlikePost response:", JSON.stringify(response, null, 2)); // Log full response
       if (!response?.data?.likesCount && response.data?.likesCount !== 0) {
         throw new Error(
           `Invalid likesCount in response: ${JSON.stringify(response)}`,
         );
       }
-      console.log("unlikePost returning:", response.data.likesCount); // Log return value
+      // console.log("unlikePost returning:", response.data.likesCount); // Log return value
       return response;
     } catch (error) {
       console.error("unlikePost error:", error.message, error.response?.data);
@@ -53,7 +53,7 @@ const postService = {
     const response = await apiClient.post(`/posts/${postId}/comments`, {
       content,
     });
-    console.log("addComment response:", JSON.stringify(response, null, 2));
+    // console.log("addComment response:", JSON.stringify(response, null, 2));
     return response;
   },
 
@@ -61,13 +61,13 @@ const postService = {
     const response = await apiClient.put(`/posts/comments/${commentId}`, {
       content,
     });
-    console.log("updateComment response:", JSON.stringify(response, null, 2));
+    // console.log("updateComment response:", JSON.stringify(response, null, 2));
     return response;
   },
 
   deleteComment: async (postId, commentId) => {
     const response = await apiClient.delete(`/posts/comments/${commentId}`);
-    console.log("deleteComment response:", JSON.stringify(response, null, 2));
+    // console.log("deleteComment response:", JSON.stringify(response, null, 2));
     return response;
   },
 
@@ -76,7 +76,7 @@ const postService = {
     const response = await apiClient.get(
       `/posts/${postId}/comments?page=${page}&limit=${limit}`,
     );
-    console.log("response From service: ", response);
+    // console.log("response From service: ", response);
 
     return response;
   },

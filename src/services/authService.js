@@ -2,13 +2,13 @@ import apiClient from "../utils/apiClient";
 
 const authService = {
   registerUser: async (data) => {
-    console.log("Register payload:", data);
+    // console.log("Register payload:", data);
     const response = await apiClient.post("/auth/register", data);
-    console.log("Register response:", response);
+    // console.log("Register response:", response);
     return response; // response.data from interceptor
   },
   loginUser: async (data) => {
-    console.log("Login Payload:", data);
+    // console.log("Login Payload:", data);
 
     const response = await apiClient.post("/auth/login", data);
     return response;
@@ -41,9 +41,9 @@ const authService = {
     return response;
   },
   getMe: async () => {
-    console.log("Fetching current user");
+    // console.log("Fetching current user");
     const response = await apiClient.get("/auth/getMe");
-    console.log("getMe response:", response);
+    // console.log("getMe response:", response);
     return response;
   },
 };

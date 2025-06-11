@@ -75,7 +75,7 @@ const PostDetailPage = () => {
     try {
       const result = await handleUpdateComment(postId, commentId, content);
       if (result) {
-        await handleGetComments(postId); // Refresh comments
+        await handleGetComments(postId);
         // toast.success("Comment updated successfully!");
       }
     } catch (error) {

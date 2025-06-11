@@ -18,7 +18,7 @@ export const fetchProfile = createAsyncThunk(
   async (userId, { rejectWithValue }) => {
     try {
       const response = await profileService.getUserProfile(userId);
-      console.log("fetchProfile response:", response.data.user);
+      // console.log("fetchProfile response:", response.data.user);
       return response.data.user;
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to fetch profile";
@@ -37,7 +37,7 @@ export const fetchUserPosts = createAsyncThunk(
         page,
         pageSize,
       );
-      console.log("fetchUserPosts response:", response.data.posts);
+      // console.log("fetchUserPosts response:", response.data.posts);
       return response.data.posts;
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to fetch posts";
@@ -52,7 +52,7 @@ export const searchUsers = createAsyncThunk(
   async ({ query, page = 1, pageSize = 10 }, { rejectWithValue }) => {
     try {
       const response = await profileService.searchUsers(query, page, pageSize);
-      console.log("searchUsers response:", response.data);
+      // console.log("searchUsers response:", response.data);
       return {
         users: response.data.users,
         total: response.data.total,

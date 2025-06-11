@@ -35,13 +35,13 @@ const ProfilePage = () => {
       navigate("/404", {
         state: { message: "Invalid profile ID format." },
       });
-      return; // Important: Return early to prevent further execution
+      return; 
     }
 
     if (!id && !user?.id) return;
 
     const profileId = id || user.id;
-    console.log("Fetching profile for ID:", profileId);
+    // console.log("Fetching profile for ID:", profileId);
 
     Promise.all([
       getUserProfile(profileId),

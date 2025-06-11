@@ -141,7 +141,6 @@ const AppLayout = () => {
         </div>
       )}
 
-      {/* Right Sidebar (Chat) - Mobile */}
       {isMobile && isRightSidebarOpen && (
         <motion.div
           initial={{ x: "100%" }}
@@ -157,7 +156,6 @@ const AppLayout = () => {
         </motion.div>
       )}
 
-      {/* Mobile Navigation */}
       {isMobile && (
         <MobileNavigation
           onToggleLeftSidebar={toggleLeftSidebar}
@@ -165,7 +163,6 @@ const AppLayout = () => {
         />
       )}
 
-      {/* Floating Chat Button */}
       {!isMobile && !isRightSidebarOpen && (
         <button
           onClick={toggleRightSidebar}

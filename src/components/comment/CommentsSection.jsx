@@ -2,7 +2,6 @@ import React from "react";
 import { Box, Typography, Paper } from "@mui/material";
 import CommentForm from "./CommentForm";
 import CommentsList from "./CommentsList";
-// import ErrorBoundary from "../common/ErrorBoundary";
 
 const CommentsSection = ({
   comments,
@@ -56,7 +55,6 @@ const CommentsSection = ({
         >
           Comments ({comments.length})
         </Typography>
-        {/* <ErrorBoundary> */}
         <CommentsList
           comments={comments}
           currentUserId={currentUserId}
@@ -64,7 +62,6 @@ const CommentsSection = ({
           onDeleteComment={onDeleteComment}
           postId={postId}
         />
-        {/* </ErrorBoundary> */}
       </Box>
     </Box>
   );

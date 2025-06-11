@@ -37,34 +37,32 @@ const ExplorePage = () => {
   const navigate = useNavigate();
   const currentUserId = useSelector((state) => state.auth.user.id || "");
 
-  // Sync localUsers with Redux users
   useEffect(() => {
     setLocalUsers(users);
   }, [users]);
 
-  // Fetch current user if currentUserId is empty
+
   useEffect(() => {
     if (!currentUserId && authUser === undefined) {
-      console.log("Fetching current user...");
+      // console.log("Fetching current user...");
       getUser().catch((err) => {
         console.error("Failed to fetch current user:", err);
       });
     }
   }, [currentUserId, authUser, getUser]);
 
-  // Debug render state and auth
   renderCountRef.current += 1;
-  console.log(`ExplorePage render count: ${renderCountRef.current}`);
+  // console.log(`ExplorePage render count: ${renderCountRef.current}`);
   useEffect(() => {
-    console.log("Current User ID:", {
-      value: currentUserId,
-      type: typeof currentUserId,
-    });
-    console.log("Users:", localUsers);
+    // console.log("Current User ID:", {
+    //   value: currentUserId,
+    //   type: typeof currentUserId,
+    // });
+    // console.log("Users:", localUsers);
     const filteredUsers = localUsers.filter(
       (u) => String(u.id) !== String(currentUserId),
     );
-    console.log("Filtered Users:", filteredUsers);
+    // console.log("Filtered Users:", filteredUsers);
     if (
       currentUserId &&
       localUsers.some((u) => String(u.id) === String(currentUserId))
@@ -76,10 +74,9 @@ const ExplorePage = () => {
     }
   }, [currentUserId, localUsers]);
 
-  // Debounced search function
   const debouncedSearch = useCallback(
     debounce((query, pageNum) => {
-      console.log("Executing debounced search:", { query, page: pageNum });
+      // console.log("Executing debounced search:", { query, page: pageNum });
       searchUsers(query, pageNum, pageSize).catch((error) => {
         console.error("Search error:", error);
         showErrorToast("Failed to search users");
@@ -88,21 +85,19 @@ const ExplorePage = () => {
     [searchUsers, clearUsers],
   );
 
-  // Log debouncedSearch creation
   useEffect(() => {
-    console.log("debouncedSearch created");
+    // console.log("debouncedSearch created");
     return () => debouncedSearch.cancel();
   }, [debouncedSearch]);
 
-  // Handle search query changes
   useEffect(() => {
     if (searchQuery.trim() !== lastSearchedQueryRef.current) {
-      console.log("Search query changed:", searchQuery);
+      // console.log("Search query changed:", searchQuery);
       if (searchQuery.trim()) {
         lastSearchedQueryRef.current = searchQuery.trim();
         debouncedSearch(searchQuery, 1);
       } else {
-        console.log("Clearing users due to empty query");
+        // console.log("Clearing users due to empty query");
         lastSearchedQueryRef.current = "";
         clearUsers();
       }
@@ -110,14 +105,13 @@ const ExplorePage = () => {
     return () => debouncedSearch.cancel();
   }, [searchQuery, debouncedSearch, clearUsers]);
 
-  // Handle page changes
   useEffect(() => {
     if (
       page !== 1 &&
       searchQuery.trim() &&
       searchQuery.trim() === lastSearchedQueryRef.current
     ) {
-      console.log("Fetching page:", page, "for query:", searchQuery);
+      // console.log("Fetching page:", page, "for query:", searchQuery);
       searchUsers(searchQuery, page, pageSize).catch((error) => {
         console.error("Pagination search error:", error);
         showErrorToast("Failed to fetch users");
@@ -126,7 +120,7 @@ const ExplorePage = () => {
   }, [page, searchQuery, searchUsers]);
 
   const handlePageChange = (e, newPage) => {
-    console.log("Changing to page:", newPage);
+    // console.log("Changing to page:", newPage);
     setPage(newPage);
   };
 
@@ -134,7 +128,6 @@ const ExplorePage = () => {
     const originalUsers = [...localUsers];
     const newIsFollowing = !isFollowing;
 
-    // Optimistic update
     setLocalUsers((prev) =>
       prev.map((u) =>
         u.id === userId ? { ...u, isFollowing: newIsFollowing } : u,
@@ -142,23 +135,21 @@ const ExplorePage = () => {
     );
 
     try {
-      console.log(
-        `Attempting to ${isFollowing ? "unfollow" : "follow"} user:`,
-        userId,
-      );
+      // console.log(
+      //   `Attempting to ${isFollowing ? "unfollow" : "follow"} user:`,
+      //   userId,
+      // );
       if (isFollowing) {
         await unfollowUser(userId);
-        console.log(`Unfollowed user ${userId}`);
+        // console.log(`Unfollowed user ${userId}`);
       } else {
         await followUser(userId);
-        console.log(`Followed user ${userId}`);
+        // console.log(`Followed user ${userId}`);
       }
     } catch (err) {
       console.error("Follow/Unfollow error:", err);
       showErrorToast(`Failed to ${isFollowing ? "unfollow" : "follow"} user`);
-      // Revert optimistic update
       setLocalUsers(originalUsers);
-      // Refetch users to sync with server
       if (searchQuery.trim()) {
         searchUsers(searchQuery, page, pageSize).catch((error) => {
           console.error("Refetch error:", error);
@@ -168,7 +159,7 @@ const ExplorePage = () => {
   };
 
   const handleUserClick = (userId) => {
-    console.log("Navigating to profile:", userId);
+    // console.log("Navigating to profile:", userId);
     navigate(`/profile/${userId}`);
   };
 
@@ -177,9 +168,8 @@ const ExplorePage = () => {
   );
   const totalPages = Math.ceil(usersTotal / pageSize);
 
-  // Render loading if currentUserId is undefined
   if (currentUserId === undefined) {
-    console.log("Waiting for auth data...");
+    // console.log("Waiting for auth data...");
     return (
       <Box className="min-h-screen bg-gray-100 p-4 flex justify-center items-center">
         <CircularProgress />
